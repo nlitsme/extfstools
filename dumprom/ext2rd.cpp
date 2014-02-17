@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <string>
 #include "util/rw/MmapReader.h"
+#include "util/rw/BlockDevice.h"
 #include "util/rw/OffsetReader.h"
 #include "args.h"
 #include <boost/make_shared.hpp>
@@ -1216,7 +1217,10 @@ int main(int argc,char**argv)
     }
 
     try {
-    ReadWriter_ptr r= boost::shared_ptr<MmapReader>(new MmapReader(fsfile, MmapReader::readonly));
+
+    // todo: first determine if fsfile is a blockdev, or normal file
+    //ReadWriter_ptr r= boost::shared_ptr<MmapReader>(new MmapReader(fsfile, MmapReader::readonly));
+    ReadWriter_ptr r= boost::shared_ptr<BlockDevice>(new BlockDevice(fsfile, BlockDevice::readonly));
     if (!offsets.empty()) {
         r= boost::make_shared<OffsetReader>(r, offsets.front(), r->size()-offsets.front());
         offsets.pop_front();
