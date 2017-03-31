@@ -21,6 +21,47 @@
 
 // see linux/fs/ext4/ext4.h
 enum {EXT4_FT_UNKNOWN, EXT4_FT_REG_FILE, EXT4_FT_DIR, EXT4_FT_CHRDEV, EXT4_FT_BLKDEV, EXT4_FT_FIFO, EXT4_FT_SOCK, EXT4_FT_SYMLINK };
+#define EXT4_FEATURE_COMPAT_DIR_PREALLOC	0x0001
+#define EXT4_FEATURE_COMPAT_IMAGIC_INODES	0x0002
+#define EXT4_FEATURE_COMPAT_HAS_JOURNAL		0x0004
+#define EXT4_FEATURE_COMPAT_EXT_ATTR		0x0008
+#define EXT4_FEATURE_COMPAT_RESIZE_INODE	0x0010
+#define EXT4_FEATURE_COMPAT_DIR_INDEX		0x0020
+
+#define EXT4_FEATURE_RO_COMPAT_SPARSE_SUPER	0x0001
+#define EXT4_FEATURE_RO_COMPAT_LARGE_FILE	0x0002
+#define EXT4_FEATURE_RO_COMPAT_BTREE_DIR	0x0004
+#define EXT4_FEATURE_RO_COMPAT_HUGE_FILE        0x0008
+#define EXT4_FEATURE_RO_COMPAT_GDT_CSUM		0x0010
+#define EXT4_FEATURE_RO_COMPAT_DIR_NLINK	0x0020
+#define EXT4_FEATURE_RO_COMPAT_EXTRA_ISIZE	0x0040
+#define EXT4_FEATURE_RO_COMPAT_QUOTA		0x0100
+#define EXT4_FEATURE_RO_COMPAT_BIGALLOC		0x0200
+/*
+ * METADATA_CSUM also enables group descriptor checksums (GDT_CSUM).  When
+ * METADATA_CSUM is set, group descriptor checksums use the same algorithm as
+ * all other data structures' checksums.  However, the METADATA_CSUM and
+ * GDT_CSUM bits are mutually exclusive.
+ */
+#define EXT4_FEATURE_RO_COMPAT_METADATA_CSUM	0x0400
+
+#define EXT4_FEATURE_INCOMPAT_COMPRESSION	0x0001
+#define EXT4_FEATURE_INCOMPAT_FILETYPE		0x0002
+#define EXT4_FEATURE_INCOMPAT_RECOVER		0x0004 /* Needs recovery */
+#define EXT4_FEATURE_INCOMPAT_JOURNAL_DEV	0x0008 /* Journal device */
+#define EXT4_FEATURE_INCOMPAT_META_BG		0x0010
+#define EXT4_FEATURE_INCOMPAT_EXTENTS		0x0040 /* extents support */
+#define EXT4_FEATURE_INCOMPAT_64BIT		0x0080
+#define EXT4_FEATURE_INCOMPAT_MMP               0x0100
+#define EXT4_FEATURE_INCOMPAT_FLEX_BG		0x0200
+#define EXT4_FEATURE_INCOMPAT_EA_INODE		0x0400 /* EA in inode */
+#define EXT4_FEATURE_INCOMPAT_DIRDATA		0x1000 /* data in dirent */
+#define EXT4_FEATURE_INCOMPAT_BG_USE_META_CSUM	0x2000 /* use crc32c for bg */
+#define EXT4_FEATURE_INCOMPAT_LARGEDIR		0x4000 /* >2GB or 3-lvl htree */
+#define EXT4_FEATURE_INCOMPAT_INLINE_DATA	0x8000 /* data in inode */
+
+
+
 struct DirectoryEntry {
     uint32_t inode;
     uint8_t  filetype;  // 1=file, 2=dir, 3=chardev, 4=blockdev, 5=fifo, 6=sock, 7=symlink
@@ -172,13 +213,67 @@ struct SuperBlock  {
         printf("s_first_ino=%d\n", s_first_ino);
         printf("s_inode_size=%d\n", s_inode_size);
         printf("s_block_group_nr=%d\n", s_block_group_nr);
-        printf("s_feature_compat=%08x\n", s_feature_compat);
-        printf("s_feature_incompat=%08x\n", s_feature_incompat);
-        printf("s_feature_ro_compat=%08x\n", s_feature_ro_compat);
+        printf("s_feature_compat=%08x: %s\n", s_feature_compat, feat_compat2str(s_feature_compat).c_str());
+        printf("s_feature_incompat=%08x: %s\n", s_feature_incompat, feat_incompat2str(s_feature_incompat).c_str());
+        printf("s_feature_ro_compat=%08x: %s\n", s_feature_ro_compat, feat_rocompat2str(s_feature_ro_compat).c_str());
         printf("s_uuid=%s\n", hexdump(s_uuid, 16).c_str());
         printf("s_volume_name=%s\n", ascdump(s_volume_name, 16).c_str());
         printf("s_last_mounted=%s\n", ascdump(s_last_mounted, 16).c_str());
         printf("s_algo_bitmap=%08x\n", s_algo_bitmap);
+    }
+    static std::string feat_compat2str(uint32_t feat)
+    {
+        StringList l;
+
+        uint32_t all = EXT4_FEATURE_COMPAT_DIR_PREALLOC|EXT4_FEATURE_COMPAT_IMAGIC_INODES|EXT4_FEATURE_COMPAT_HAS_JOURNAL|EXT4_FEATURE_COMPAT_EXT_ATTR|EXT4_FEATURE_COMPAT_RESIZE_INODE|EXT4_FEATURE_COMPAT_DIR_INDEX;
+        if (feat&EXT4_FEATURE_COMPAT_DIR_PREALLOC) l.push_back("DIR_PREALLOC");
+        if (feat&EXT4_FEATURE_COMPAT_IMAGIC_INODES) l.push_back("IMAGIC_INODES");
+        if (feat&EXT4_FEATURE_COMPAT_HAS_JOURNAL) l.push_back("HAS_JOURNAL");
+        if (feat&EXT4_FEATURE_COMPAT_EXT_ATTR) l.push_back("EXT_ATTR");
+        if (feat&EXT4_FEATURE_COMPAT_RESIZE_INODE) l.push_back("RESIZE_INODE");
+        if (feat&EXT4_FEATURE_COMPAT_DIR_INDEX) l.push_back("DIR_INDEX");
+        if (feat&~all) l.push_back(stringformat("unk_%x", feat&~all));
+        return JoinStringList(l, ",");
+    }
+    static std::string feat_incompat2str(uint32_t feat)
+    {
+        StringList l;
+
+        uint32_t all = EXT4_FEATURE_INCOMPAT_COMPRESSION|EXT4_FEATURE_INCOMPAT_FILETYPE|EXT4_FEATURE_INCOMPAT_RECOVER|EXT4_FEATURE_INCOMPAT_JOURNAL_DEV|EXT4_FEATURE_INCOMPAT_META_BG|EXT4_FEATURE_INCOMPAT_EXTENTS|EXT4_FEATURE_INCOMPAT_64BIT|EXT4_FEATURE_INCOMPAT_MMP|EXT4_FEATURE_INCOMPAT_FLEX_BG|EXT4_FEATURE_INCOMPAT_EA_INODE|EXT4_FEATURE_INCOMPAT_DIRDATA|EXT4_FEATURE_INCOMPAT_BG_USE_META_CSUM|EXT4_FEATURE_INCOMPAT_LARGEDIR|EXT4_FEATURE_INCOMPAT_INLINE_DATA;
+        if (feat&EXT4_FEATURE_INCOMPAT_COMPRESSION) l.push_back("COMPRESSION");
+        if (feat&EXT4_FEATURE_INCOMPAT_FILETYPE) l.push_back("FILETYPE");
+        if (feat&EXT4_FEATURE_INCOMPAT_RECOVER) l.push_back("RECOVER");
+        if (feat&EXT4_FEATURE_INCOMPAT_JOURNAL_DEV) l.push_back("JOURNAL_DEV");
+        if (feat&EXT4_FEATURE_INCOMPAT_META_BG) l.push_back("META_BG");
+        if (feat&EXT4_FEATURE_INCOMPAT_EXTENTS) l.push_back("EXTENTS");
+        if (feat&EXT4_FEATURE_INCOMPAT_64BIT) l.push_back("64BIT");
+        if (feat&EXT4_FEATURE_INCOMPAT_MMP) l.push_back("MMP");
+        if (feat&EXT4_FEATURE_INCOMPAT_FLEX_BG) l.push_back("FLEX_BG");
+        if (feat&EXT4_FEATURE_INCOMPAT_EA_INODE) l.push_back("EA_INODE");
+        if (feat&EXT4_FEATURE_INCOMPAT_DIRDATA) l.push_back("DIRDATA");
+        if (feat&EXT4_FEATURE_INCOMPAT_BG_USE_META_CSUM) l.push_back("BG_USE_META_CSUM");
+        if (feat&EXT4_FEATURE_INCOMPAT_LARGEDIR) l.push_back("LARGEDIR");
+        if (feat&EXT4_FEATURE_INCOMPAT_INLINE_DATA) l.push_back("INLINE_DATA");
+        if (feat&~all) l.push_back(stringformat("unk_%x", feat&~all));
+        return JoinStringList(l, ",");
+    }
+    static std::string feat_rocompat2str(uint32_t feat)
+    {
+        StringList l;
+
+        uint32_t all = EXT4_FEATURE_RO_COMPAT_SPARSE_SUPER|EXT4_FEATURE_RO_COMPAT_LARGE_FILE|EXT4_FEATURE_RO_COMPAT_BTREE_DIR|EXT4_FEATURE_RO_COMPAT_HUGE_FILE|EXT4_FEATURE_RO_COMPAT_GDT_CSUM|EXT4_FEATURE_RO_COMPAT_DIR_NLINK|EXT4_FEATURE_RO_COMPAT_EXTRA_ISIZE|EXT4_FEATURE_RO_COMPAT_QUOTA|EXT4_FEATURE_RO_COMPAT_BIGALLOC|EXT4_FEATURE_RO_COMPAT_METADATA_CSUM;
+        if (feat&EXT4_FEATURE_RO_COMPAT_SPARSE_SUPER) l.push_back("SPARSE_SUPER");
+        if (feat&EXT4_FEATURE_RO_COMPAT_LARGE_FILE) l.push_back("LARGE_FILE");
+        if (feat&EXT4_FEATURE_RO_COMPAT_BTREE_DIR) l.push_back("BTREE_DIR");
+        if (feat&EXT4_FEATURE_RO_COMPAT_HUGE_FILE) l.push_back("HUGE_FILE");
+        if (feat&EXT4_FEATURE_RO_COMPAT_GDT_CSUM) l.push_back("GDT_CSUM");
+        if (feat&EXT4_FEATURE_RO_COMPAT_DIR_NLINK) l.push_back("DIR_NLINK");
+        if (feat&EXT4_FEATURE_RO_COMPAT_EXTRA_ISIZE) l.push_back("EXTRA_ISIZE");
+        if (feat&EXT4_FEATURE_RO_COMPAT_QUOTA) l.push_back("QUOTA");
+        if (feat&EXT4_FEATURE_RO_COMPAT_BIGALLOC) l.push_back("BIGALLOC");
+        if (feat&EXT4_FEATURE_RO_COMPAT_METADATA_CSUM) l.push_back("METADATA_CSUM");
+        if (feat&~all) l.push_back(stringformat("unk_%x", feat&~all));
+        return JoinStringList(l, ",");
     }
 
     ByteVector getblock(int n) const
@@ -196,6 +291,7 @@ struct SuperBlock  {
 typedef boost::function<bool(const uint8_t*)> BLOCKCALLBACK;
 struct ExtentNode {
 
+    virtual ~ExtentNode() { }
     void parse(ReadWriter_ptr r)
     {
         uint8_t buf[12];
@@ -304,8 +400,11 @@ struct Extent {
         const uint8_t *p= first;
         eh.parse(p);   p+=12;
 
-        if (eh.eh_magic != 0xf30a)
-            throw "invalid extent hdr magic";
+        if (eh.eh_magic != 0xf30a) {
+            printf("ehmagic=%04x - %s\n", eh.eh_magic, hexdump(p-12, 12).c_str());
+            //throw "invalid extent hdr magic";
+            return;
+        }
 
         for (int i=0 ; i<eh.eh_entries ; i++) {
             if (eh.eh_depth==0)
@@ -435,8 +534,8 @@ struct Inode {
     }
     void dump() const
     {
-        printf("m:%06o %4d o[%5d %5d] t[%10d %10d %10d %10d]  %12lld [b:%8d] F:%05x X:%08x %s\n",
-                i_mode, i_links_count, i_gid, i_uid, i_atime, i_ctime, i_mtime, i_dtime, datasize(), i_blocks, i_flags, i_file_acl, hexdump(i_osd2, 12).c_str());
+        printf("m:%06o %4d o[%5d %5d] t[%10d %10d %10d %10d]  %12lld [b:%8d] F:%05x(%s) X:%08x %s\n",
+                i_mode, i_links_count, i_gid, i_uid, i_atime, i_ctime, i_mtime, i_dtime, datasize(), i_blocks, i_flags, fl2str(i_flags).c_str(), i_file_acl, hexdump(i_osd2, 12).c_str());
         if ((i_mode&0xf000)==EXT4_S_IFLNK && i_size<60) {
             printf("symlink: %s\n", symlink.c_str());
         }
@@ -449,6 +548,40 @@ struct Inode {
                 printf(" %08x", i_block[i]);
             printf("  i1:%08x, i2:%08x, i3:%08x\n", i_block[12], i_block[13], i_block[14]);
         }
+    }
+    static std::string fl2str(uint32_t fl)
+    {
+        StringList l;
+
+        uint32_t all = EXT4_SECRM_FL|EXT4_UNRM_FL|EXT4_COMPR_FL|EXT4_SYNC_FL|EXT4_IMMUTABLE_FL|EXT4_APPEND_FL|EXT4_NODUMP_FL|EXT4_NOATIME_FL|EXT4_DIRTY_FL|EXT4_COMPRBLK_FL|EXT4_NOCOMPR_FL|EXT4_ECOMPR_FL|EXT4_INDEX_FL|EXT4_IMAGIC_FL|EXT4_JOURNAL_DATA_FL|EXT4_NOTAIL_FL|EXT4_DIRSYNC_FL|EXT4_TOPDIR_FL|EXT4_HUGE_FILE_FL|EXT4_EXTENTS_FL|EXT4_EA_INODE_FL|EXT4_EOFBLOCKS_FL|EXT4_INLINE_DATA_FL|EXT4_RESERVED_FL;
+
+
+        if (fl&EXT4_SECRM_FL) l.push_back("SECRM");
+        if (fl&EXT4_UNRM_FL) l.push_back("UNRM");
+        if (fl&EXT4_COMPR_FL) l.push_back("COMPR");
+        if (fl&EXT4_SYNC_FL) l.push_back("SYNC");
+        if (fl&EXT4_IMMUTABLE_FL) l.push_back("IMMUTABLE");
+        if (fl&EXT4_APPEND_FL) l.push_back("APPEND");
+        if (fl&EXT4_NODUMP_FL) l.push_back("NODUMP");
+        if (fl&EXT4_NOATIME_FL) l.push_back("NOATIME");
+        if (fl&EXT4_DIRTY_FL) l.push_back("DIRTY");
+        if (fl&EXT4_COMPRBLK_FL) l.push_back("COMPRBLK");
+        if (fl&EXT4_NOCOMPR_FL) l.push_back("NOCOMPR");
+        if (fl&EXT4_ECOMPR_FL) l.push_back("ECOMPR");
+        if (fl&EXT4_INDEX_FL) l.push_back("INDEX");
+        if (fl&EXT4_IMAGIC_FL) l.push_back("IMAGIC");
+        if (fl&EXT4_JOURNAL_DATA_FL) l.push_back("JOURNAL_DATA");
+        if (fl&EXT4_NOTAIL_FL) l.push_back("NOTAIL");
+        if (fl&EXT4_DIRSYNC_FL) l.push_back("DIRSYNC");
+        if (fl&EXT4_TOPDIR_FL) l.push_back("TOPDIR");
+        if (fl&EXT4_HUGE_FILE_FL) l.push_back("HUGE_FILE");
+        if (fl&EXT4_EXTENTS_FL) l.push_back("EXTENTS");
+        if (fl&EXT4_EA_INODE_FL) l.push_back("EA_INODE");
+        if (fl&EXT4_EOFBLOCKS_FL) l.push_back("EOFBLOCKS");
+        if (fl&EXT4_INLINE_DATA_FL) l.push_back("INLINE_DATA");
+        if (fl&EXT4_RESERVED_FL) l.push_back("RESERVED");
+        if (fl&~all) l.push_back(stringformat("unk_%x", fl&~all));
+        return JoinStringList(l, ",");
     }
     uint64_t datasize() const {
         return uint64_t(i_size); // +(uint64_t(i_dir_acl)<<32);
@@ -638,12 +771,17 @@ struct Ext2FileSystem {
 
     void parse(ReadWriter_ptr r)
     {
+        // superblock is always at fixed position 0x400
+        //   ... does that indicate a min blocksize of 0x800 ?
+        //   with smaller blocksize, the groupdescs would overlap with the first superblock
+        //
         r->setpos(1024);
         super.parse(r);
 
         if (super.s_magic != 0xef53)
             throw "not an ext2 fs";
 
+        // groupdescs follow the superblock in the 2nd block
         parsegroupdescs(r);
 
         groups.resize(super.ngroups());
@@ -878,7 +1016,9 @@ struct exportdirectory : action {
         }
         recursedirs(fs, ino, ".", [&](const DirectoryEntry& e, const std::string& path) {
             if (e.filetype==EXT4_FT_DIR) {
-                mkdir((savepath+"/"+path+"/"+e.name).c_str(), 0777);
+                if (-1==mkdir((savepath+"/"+path+"/"+e.name).c_str(), 0777)) {
+                    perror("mkdir(savepath)");
+                }
             }
             else if (e.filetype==EXT4_FT_REG_FILE) {
                 exportinode byino(e.inode, savepath+"/"+path+"/"+e.name);
@@ -1046,6 +1186,9 @@ private:
             uint32_t nblocks= r->read32le();
             uint32_t chunksize= r->read32le();
 
+            if (cnkhdrsize!=12)
+                r->setpos(r->getpos() + cnkhdrsize-12);
+
             switch(chunktype)
             {
                 case 0xcac1: // copy
@@ -1168,6 +1311,7 @@ void usage()
 {
     printf("Usage: ext2rd [-l] [-v] <fsname> [exports...]\n");
     printf("     -l       lists all files\n");
+    printf("     -B       open as block device\n");
     printf("     -d       verbosely lists all inodes\n");
     printf("     -o OFS1/OFS2  specify offset to efs/sparse image\n");
     printf("     -b from[-until]   hexdump blocks\n");
@@ -1176,6 +1320,8 @@ void usage()
     printf("   ext2path   hexdump ext2fs path\n");
     printf("   ext2path:path   save ext2fs path to path\n");
     printf("   ext2path/:path  recursively save ext2fs dir to path\n");
+    printf("note: ext2path must not start with a slash\n");
+    printf("note2: /dev/rdiskNN is much faster than /dev/diskNN\n");
 }
 
 int main(int argc,char**argv)
@@ -1184,6 +1330,7 @@ int main(int argc,char**argv)
 
     std::string fsfile;
     std::vector<action::ptr> actions;
+    bool openasblockdev= false;
 
     for (int i=1 ; i<argc ; i++)
     {
@@ -1192,6 +1339,7 @@ int main(int argc,char**argv)
             case 'l': actions.push_back(boost::make_shared<listfiles>()); break;
             case 'd': actions.push_back(boost::make_shared<dumpfs>()); break;
             case 'o': offsets.push_back(getintarg(argv, i, argc)); break;
+            case 'B': openasblockdev= true; break;
             case 'b': 
                       {
                       std::string arg= getstrarg(argv,i,argc);
@@ -1218,9 +1366,11 @@ int main(int argc,char**argv)
 
     try {
 
-    // todo: first determine if fsfile is a blockdev, or normal file
-    //ReadWriter_ptr r= boost::shared_ptr<MmapReader>(new MmapReader(fsfile, MmapReader::readonly));
-    ReadWriter_ptr r= boost::shared_ptr<BlockDevice>(new BlockDevice(fsfile, BlockDevice::readonly));
+    ReadWriter_ptr r;
+    if (openasblockdev)
+        r= boost::shared_ptr<BlockDevice>(new BlockDevice(fsfile, BlockDevice::readonly));
+    else
+        r= boost::shared_ptr<MmapReader>(new MmapReader(fsfile, MmapReader::readonly));
     if (!offsets.empty()) {
         r= boost::make_shared<OffsetReader>(r, offsets.front(), r->size()-offsets.front());
         offsets.pop_front();
@@ -1243,7 +1393,7 @@ int main(int argc,char**argv)
 
     }
     catch(const char*msg) { printf("EXCEPTION: %s\n", msg); }
-    catch(...) { printf("EXCEPTION\n"); }
+    catch(...) { printf("EXCEPTION - did you specify -B for a block device?\n"); }
 }
 
 
