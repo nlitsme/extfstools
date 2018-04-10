@@ -1,3 +1,6 @@
+/*
+ *  Author: Willem Hengeveld <itsme@xs4all.nl>
+ */
 #include <stdio.h>
 #include <map>
 #include <vector>
