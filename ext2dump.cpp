@@ -156,6 +156,7 @@ struct SuperBlock  {
 };
 typedef boost::function<bool(const uint8_t*)> BLOCKCALLBACK;
 struct ExtentNode {
+    virtual ~ExtentNode() { }
     virtual void parse(const uint8_t *first)= 0;
     virtual void dump() const= 0;
 
@@ -258,8 +259,8 @@ struct Extent {
         const uint8_t *p= first;
         eh.parse(p);   p+=12;
 
-        if (eh.eh_magic != 0xf30a)
-            throw "invalid extent hdr magic";
+//      if (eh.eh_magic != 0xf30a)
+//          throw "invalid extent hdr magic";
 
         for (int i=0 ; i<eh.eh_entries ; i++) {
             if (eh.eh_depth==0)
