@@ -63,6 +63,15 @@ enum {EXT4_FT_UNKNOWN, EXT4_FT_REG_FILE, EXT4_FT_DIR, EXT4_FT_CHRDEV, EXT4_FT_BL
 #define EXT4_FEATURE_INCOMPAT_LARGEDIR		0x4000 /* >2GB or 3-lvl htree */
 #define EXT4_FEATURE_INCOMPAT_INLINE_DATA	0x8000 /* data in inode */
 
+std::string timestr(uint32_t t32)
+{
+    time_t t = t32;
+    struct tm tm = *std::gmtime(&t);
+    char str[40];
+    std::strftime(str, 40, "%Y-%m-%d %H:%M:%S", &tm);
+
+    return str;
+}
 
 
 struct DirectoryEntry {
@@ -660,6 +669,28 @@ struct Inode {
     {
         return e.enumblocks(super, cb);
     }
+    static void rwx(char *str, int bits, bool extra, char xchar)
+    {
+        str[0] = (bits&4) ? 'r' : '-';
+        str[1] = (bits&2) ? 'w' : '-';
+        if (extra) 
+            str[2] = (bits&1) ? (xchar&~0x20) : (xchar|0x20);
+        else
+            str[2] = (bits&1) ? 'x' : '-';
+    }
+    std::string modestr() const
+    {
+        std::string result(10, ' ');
+        const char *typechar = "?pc?d?b?-?l?s???";
+
+        result[0] = typechar[i_mode>>12];
+
+        rwx(&result[1], (i_mode>>6)&7, (i_mode>>11)&1, 's');
+        rwx(&result[4], (i_mode>>3)&7, (i_mode>>10)&1, 's');
+        rwx(&result[7], i_mode&7, (i_mode>>9)&1, 't');
+
+        return result;
+    }
 };
 
 struct BlockGroupDescriptor {
@@ -958,6 +989,7 @@ struct exportinode : action {
                 w.write(first, fs.super.blocksize());
                 return true;
             });
+            w.setpos(i.datasize());
             w.truncate(i.datasize());
         }
     }
@@ -1038,6 +1070,20 @@ struct listfiles : action {
         //tree.scanfs(fs);
         recursedirs(fs, ROOTDIRINODE, "", [](const DirectoryEntry& e, const std::string& path) {
             printf("%9d %s%c %s/%s\n", e.inode,  e.filetype>=8 ? "**":"", "0-dcbpsl"[e.filetype&7], path.c_str(), e.name.c_str());
+        });
+    }
+};
+struct verboselistfiles : action {
+    void perform(Ext2FileSystem &fs) override
+    {
+        //TreeReconstructor tree;
+        //tree.scanfs(fs);
+        recursedirs(fs, ROOTDIRINODE, "", [&fs](const DirectoryEntry& e, const std::string& path) {
+            const Inode &i= fs.getinode(e.inode);
+            printf("%9d %s %5d %5d %10d %s [%s%c] %s/%s\n", 
+                    e.inode,  
+                    i.modestr().c_str(), i.i_uid, i.i_gid, i.i_size, timestr(i.i_mtime).c_str(),
+                    e.filetype>=8 ? "**":"", "0-dcbpsl"[e.filetype&7], path.c_str(), e.name.c_str());
         });
     }
 };
@@ -1340,6 +1386,7 @@ int main(int argc,char**argv)
         if (argv[i][0]=='-') switch(argv[i][1])
         {
             case 'l': actions.push_back(boost::make_shared<listfiles>()); break;
+            case 'v': actions.push_back(boost::make_shared<verboselistfiles>()); break;
             case 'd': actions.push_back(boost::make_shared<dumpfs>()); break;
             case 'o': offsets.push_back(getintarg(argv, i, argc)); break;
             case 'B': openasblockdev= true; break;

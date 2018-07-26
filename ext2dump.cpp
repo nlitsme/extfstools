@@ -14,6 +14,15 @@
 #include <boost/function.hpp>
 #include <sys/stat.h>
 
+std::string timestr(uint32_t t32)
+{
+    time_t t = t32;
+    struct tm tm = *std::gmtime(&t);
+    char str[40];
+    std::strftime(str, 40, "%Y-%m-%d %H:%M:%S", &tm);
+
+    return str;
+}
 //  ~/gitprj/repos/linux/fs/ext2/ext2.h
 //  todo: add 64bit support from ext4
 
@@ -318,6 +327,17 @@ bool ExtentInternal::enumblocks(const SuperBlock &super, BLOCKCALLBACK cb) const
  8180 03e8 00200028 4effa238 52578d7f 52578d7f 00000000 03e9 0001 00001008 00080080 00000001 0001f30a 00000004 00000000 00000000 00000201 00003400 00000200 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 b15c6b4f 00000000 00000000 00000000 00000000 00000000 00000000 0000001c 9896801c 9896801c 62f19710 4effa238 62f19710 ...
 
 */
+
+#define EXT4_EXTENTS_FL 0x80000
+
+#define EXT4_S_IFLNK 0xa000 
+#define EXT4_S_IFDIR 0x4000
+
+#define EXT4_FT_UNKNOWN 0
+#define EXT4_FT_REG_FILE 1
+#define EXT4_FT_DIR 2
+
+#define ROOTDIRINODE 2
 struct Inode {
     uint16_t i_mode;       //  000
     uint16_t i_uid;        //  002
@@ -361,11 +381,11 @@ struct Inode {
         i_blocks= get32le(p);  p+=4;
         i_flags= get32le(p);  p+=4;
         i_osd1= get32le(p);  p+=4;
-        if ((i_mode&0xf000)==0xa000 && i_size<60) {
+        if ((i_mode&0xf000)==EXT4_S_IFLNK && i_size<60) {
             symlink= std::string((const char*)p, 60);
             p+=60;
         }
-        else if (i_flags&0x80000) {
+        else if (i_flags&EXT4_EXTENTS_FL) {
             e.parse(p);      p+=60;
         }
         else {
@@ -383,10 +403,10 @@ struct Inode {
     {
         printf("m:%06o %4d o[%5d %5d] t[%10d %10d %10d %10d]  %12lld [b:%8d] F:%05x X:%08x %s\n",
                 i_mode, i_links_count, i_gid, i_uid, i_atime, i_ctime, i_mtime, i_dtime, datasize(), i_blocks, i_flags, i_file_acl, hexdump(i_osd2, 12).c_str());
-        if ((i_mode&0xf000)==0xa000 && i_size<60) {
+        if ((i_mode&0xf000)==EXT4_S_IFLNK && i_size<60) {
             printf("symlink: %s\n", symlink.c_str());
         }
-        else if (i_flags&0x80000) {
+        else if (i_flags&EXT4_EXTENTS_FL) {
             e.dump();
         }
         else {
@@ -402,10 +422,10 @@ struct Inode {
 
     bool enumblocks(const SuperBlock &super, BLOCKCALLBACK cb) const
     {
-        if ((i_mode&0xf000)==0xa000 && i_size<60) {
+        if ((i_mode&0xf000)==EXT4_S_IFLNK && i_size<60) {
             // no blocks
         }
-        else if (i_flags&0x80000) {
+        else if (i_flags&EXT4_EXTENTS_FL) {
             return enumextents(super, cb);
         }
         uint64_t bytes= 0;
@@ -469,6 +489,28 @@ struct Inode {
     bool enumextents(const SuperBlock &super, BLOCKCALLBACK cb) const
     {
         return e.enumblocks(super, cb);
+    }
+    static void rwx(char *str, int bits, bool extra, char xchar)
+    {
+        str[0] = (bits&4) ? 'r' : '-';
+        str[1] = (bits&2) ? 'w' : '-';
+        if (extra) 
+            str[2] = (bits&1) ? (xchar&~0x20) : (xchar|0x20);
+        else
+            str[2] = (bits&1) ? 'x' : '-';
+    }
+    std::string modestr() const
+    {
+        std::string result(10, ' ');
+        const char *typechar = "?pc?d?b?-?l?s???";
+
+        result[0] = typechar[i_mode>>12];
+
+        rwx(&result[1], (i_mode>>6)&7, (i_mode>>11)&1, 's');
+        rwx(&result[4], (i_mode>>3)&7, (i_mode>>10)&1, 's');
+        rwx(&result[7], i_mode&7, (i_mode>>9)&1, 't');
+
+        return result;
     }
 };
 
@@ -542,7 +584,7 @@ struct BlockGroup {
         enuminodes(inodebase, [&](int32_t nr, const Inode& ino) {
             printf("INO %d: ", nr);
             ino.dump();
-            if ((ino.i_mode&0xf000)==0x4000)
+            if ((ino.i_mode&0xf000)==EXT4_S_IFDIR)
                 ino.enumblocks(super, [&](const uint8_t *p)->bool {
                     if (p==NULL) {
                         printf("invalid blocknr\n");
@@ -676,7 +718,7 @@ struct TreeReconstructor {
     {
         fs.enuminodes([this, &fs](uint32_t nr, const Inode& inode) {
             nodetypes.emplace(nr, (inode.i_mode&0xf000)>>12);
-            if ((inode.i_mode&0xf000)==0x4000) {
+            if ((inode.i_mode&0xf000)==EXT4_S_IFDIR) {
                 auto &dir= dirmap[nr];
                 inode.enumblocks(fs.super, [&fs, &dir](const uint8_t *first)->bool {
                     if (first==NULL)
@@ -714,7 +756,7 @@ template<typename FN>
 void recursedirs(Ext2FileSystem&fs, uint32_t nr, std::string path, FN f)
 {
     const Inode &i= fs.getinode(nr);
-    if ((i.i_mode&0xf000)!=0x4000)
+    if ((i.i_mode&0xf000)!=EXT4_S_IFDIR)
         return;
     i.enumblocks(fs.super, [&](const uint8_t *first)->bool {
         if (first==NULL)
@@ -728,15 +770,14 @@ void recursedirs(Ext2FileSystem&fs, uint32_t nr, std::string path, FN f)
                 break;
             // last dir record has type=0 && inde=0, 
             // size is rest of block
-            if (e.filetype==0)
+            if (e.filetype==EXT4_FT_UNKNOWN)
                 continue;
 
             if (e.name=="." || e.name=="..")
                 continue;
 
             f(e, path);
-
-            if (e.filetype==2)
+            if (e.filetype==EXT4_FT_DIR)
                 recursedirs(fs, e.inode, path+"/"+e.name, f);
         }
         return true;
@@ -746,7 +787,7 @@ void recursedirs(Ext2FileSystem&fs, uint32_t nr, std::string path, FN f)
 uint32_t searchpath(Ext2FileSystem&fs, uint32_t nr, std::string path)
 {
     const Inode &i= fs.getinode(nr);
-    if ((i.i_mode&0xf000)!=0x4000) {
+    if ((i.i_mode&0xf000)!=EXT4_S_IFDIR) {
         printf("#%d is not a dir\n", nr);
         return 0;
     }
@@ -761,7 +802,7 @@ uint32_t searchpath(Ext2FileSystem&fs, uint32_t nr, std::string path)
             p+=n;
             if (n==0)
                 break;
-            if (e.filetype==0)
+            if (e.filetype==EXT4_FT_UNKNOWN)
                 continue;
 
             if (path.size()<e.name.size())
@@ -774,7 +815,7 @@ uint32_t searchpath(Ext2FileSystem&fs, uint32_t nr, std::string path)
             }
             // path.size() > e.name.size()
             if (path[e.name.size()]=='/' && std::equal(e.name.begin(), e.name.end(), path.begin())) {
-                if (e.filetype==2) {
+                if (e.filetype==EXT4_FT_DIR) {
                     found= searchpath(fs, e.inode, path.substr(e.name.size()+1));
                     return false;
                 }
@@ -828,6 +869,7 @@ struct exportinode : action {
                 w.write(first, fs.super.blocksize());
                 return true;
             });
+            w.setpos(i.datasize());
             w.truncate(i.datasize());
         }
     }
@@ -842,7 +884,7 @@ struct hexdumpfile : action {
 
     void perform(Ext2FileSystem &fs) override
     {
-        uint32_t ino= searchpath(fs, 2, ext2path);
+        uint32_t ino= searchpath(fs, ROOTDIRINODE, ext2path);
         if (ino==0) {
             printf("hexdumpfile: path not found\n");
             return;
@@ -862,7 +904,7 @@ struct exportfile : action {
 
     void perform(Ext2FileSystem &fs) override
     {
-        uint32_t ino= searchpath(fs, 2, ext2path);
+        uint32_t ino= searchpath(fs, ROOTDIRINODE, ext2path);
         if (ino==0) {
             printf("exportfile: path not found\n");
             return;
@@ -882,16 +924,16 @@ struct exportdirectory : action {
 
     void perform(Ext2FileSystem &fs) override
     {
-        uint32_t ino= searchpath(fs, 2, ext2path);
+        uint32_t ino= searchpath(fs, ROOTDIRINODE, ext2path);
         if (ino==0) {
             printf("exportdir: path not found\n");
             return;
         }
         recursedirs(fs, ino, ".", [&](const DirectoryEntry& e, const std::string& path) {
-            if (e.filetype==2) {
+            if (e.filetype==EXT4_FT_DIR) {
                 mkdir((savepath+"/"+path+"/"+e.name).c_str(), 0777);
             }
-            else if (e.filetype==1) {
+            else if (e.filetype==EXT4_FT_REG_FILE) {
                 exportinode byino(e.inode, savepath+"/"+path+"/"+e.name);
                 byino.perform(fs);
             }
@@ -904,8 +946,22 @@ struct listfiles : action {
     {
         //TreeReconstructor tree;
         //tree.scanfs(fs);
-        recursedirs(fs, 2, "", [](const DirectoryEntry& e, const std::string& path) {
+        recursedirs(fs, ROOTDIRINODE, "", [](const DirectoryEntry& e, const std::string& path) {
             printf("%9d %s%c %s/%s\n", e.inode,  e.filetype>=8 ? "**":"", "0-dcbpsl"[e.filetype&7], path.c_str(), e.name.c_str());
+        });
+    }
+};
+struct verboselistfiles : action {
+    void perform(Ext2FileSystem &fs) override
+    {
+        //TreeReconstructor tree;
+        //tree.scanfs(fs);
+        recursedirs(fs, ROOTDIRINODE, "", [&fs](const DirectoryEntry& e, const std::string& path) {
+            const Inode &i= fs.getinode(e.inode);
+            printf("%9d %s %5d %5d %10d %s [%s%c] %s/%s\n", 
+                    e.inode,  
+                    i.modestr().c_str(), i.i_uid, i.i_gid, i.i_size, timestr(i.i_mtime).c_str(),
+                    e.filetype>=8 ? "**":"", "0-dcbpsl"[e.filetype&7], path.c_str(), e.name.c_str());
         });
     }
 };
@@ -1063,6 +1119,7 @@ int main(int argc,char**argv)
         if (argv[i][0]=='-') switch(argv[i][1])
         {
             case 'l': actions.push_back(boost::make_shared<listfiles>()); break;
+            case 'v': actions.push_back(boost::make_shared<verboselistfiles>()); break;
             case 'd': actions.push_back(boost::make_shared<dumpfs>()); break;
             case 'o': offsets.push_back(getintarg(argv, i, argc)); break;
             case 'b': 
