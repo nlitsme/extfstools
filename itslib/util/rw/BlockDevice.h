@@ -8,7 +8,7 @@
 #include <sys/time.h>
 #endif
 
-#ifdef TARGET_OS_MAC
+#ifdef __MACH__
 #include <sys/disk.h>
 #endif
 #ifdef __linux__
@@ -27,7 +27,7 @@ class BlockDevice : public ReadWriter {
     uint64_t _curpos;
 
     uint64_t _bufferpos;
-    ByteVector _buffer;
+    std::vector<uint8_t> _buffer;
 public:
     struct filemode_t {  };
     struct readonly_t : filemode_t { };

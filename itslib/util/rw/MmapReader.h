@@ -8,7 +8,7 @@
 #include <sys/time.h>
 #endif
 
-#ifdef TARGET_OS_MAC
+#ifdef __MACH__
 #include <sys/disk.h>
 #endif
 #ifdef __linux__
