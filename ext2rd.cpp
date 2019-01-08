@@ -7,6 +7,7 @@
 #include <list>
 #include <algorithm>
 #include <string>
+#include <ctime>                // gmtime, strftime
 #include "util/rw/MmapReader.h"
 #include "util/rw/BlockDevice.h"
 #include "util/rw/OffsetReader.h"
@@ -288,7 +289,7 @@ struct SuperBlock  {
         return JoinStringList(l, ",");
     }
 
-    ByteVector getblock(int n) const
+    ByteVector getblock(unsigned n) const
     {
         if (n>=s_blocks_count)
             throw "blocknr too large";
@@ -344,7 +345,7 @@ struct ExtentLeaf : ExtentNode {
     virtual bool enumblocks(const SuperBlock &super, BLOCKCALLBACK cb) const
     {
         uint64_t blk= startblock();
-        for (int i=0 ; i<ee_len ; i++)
+        for (unsigned i=0 ; i<ee_len ; i++)
             if (!cb(&super.getblock(blk++).front()))
                 return false;
         return true;
@@ -418,7 +419,7 @@ struct Extent {
             return;
         }
 
-        for (int i=0 ; i<eh.eh_entries ; i++) {
+        for (unsigned i=0 ; i<eh.eh_entries ; i++) {
             if (eh.eh_depth==0)
                 extents.push_back(boost::make_shared<ExtentLeaf>(p));
             else
@@ -428,7 +429,7 @@ struct Extent {
     }
     virtual bool enumblocks(const SuperBlock &super, BLOCKCALLBACK cb) const
     {
-        for (int i=0 ; i<eh.eh_entries ; i++)
+        for (unsigned i=0 ; i<eh.eh_entries ; i++)
             if (!extents[i]->enumblocks(super, cb))
                 return false;
         return true;
@@ -437,7 +438,7 @@ struct Extent {
     void dump() const
     {
         eh.dump();
-        for (int i=0 ; i<extents.size() ; i++) {
+        for (unsigned i=0 ; i<extents.size() ; i++) {
             printf("EXT %d: ", i);
             extents[i]->dump();
         }
@@ -820,7 +821,7 @@ struct Ext2FileSystem {
 
         groups.resize(super.ngroups());
         uint64_t off= 0;
-        for (int i=0 ; i<super.ngroups() ; i++) {
+        for (unsigned i=0 ; i<super.ngroups() ; i++) {
             groups[i].parse(off, super, bgdescs[i]);
             off+=super.bytespergroup();
         }
