@@ -1,8 +1,6 @@
 #ifndef _UTIL_READWRITER_H__
 #define _UTIL_READWRITER_H__
 #include <boost/shared_ptr.hpp>
-#include "vectorutils.h"
-#include "stringutils.h"
 #include <string>
 #include <stdio.h>
 #include <algorithm>

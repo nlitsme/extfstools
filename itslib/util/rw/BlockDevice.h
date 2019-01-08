@@ -7,8 +7,14 @@
 #ifndef _WIN32
 #include <sys/time.h>
 #endif
-#ifndef _WIN32
+
+#ifdef TARGET_OS_MAC
 #include <sys/disk.h>
+#endif
+#ifdef __linux__
+#include <linux/fs.h>
+#endif
+#ifndef _WIN32
 #include <sys/ioctl.h>
 #endif
 #include <fcntl.h>
@@ -52,10 +58,18 @@ public:
     }
     void initdev()
     {
+#ifdef DKIOCGETBLOCKCOUNT
         if (-1==ioctl(_f, DKIOCGETBLOCKCOUNT, &_bkcount))
             throw posixerror("ioctl(DKIOCGETBLOCKCOUNT)");
         if (-1==ioctl(_f, DKIOCGETBLOCKSIZE, &_bksize))
             throw posixerror("ioctl(DKIOCGETBLOCKSIZE)");
+#endif
+#ifdef BLKGETSIZE
+        _bksize = 512;
+        if (-1==ioctl(_f, BLKGETSIZE64, &_bkcount))
+            throw posixerror("ioctl(BLKGETSIZE64)");
+        _bkcount /= _bksize;
+#endif
 
         _curpos= 0;
         _bufferpos= 0;

@@ -11,8 +11,14 @@
 #ifndef _WIN32
 #include <sys/time.h>
 #endif
-#ifndef _WIN32
+
+#ifdef TARGET_OS_MAC
 #include <sys/disk.h>
+#endif
+#ifdef __linux__
+#include <linux/fs.h>
+#endif
+#ifndef _WIN32
 #include <sys/ioctl.h>
 #endif
 
