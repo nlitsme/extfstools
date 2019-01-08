@@ -7,6 +7,7 @@
 #include <list>
 #include <algorithm>
 #include <string>
+#include <ctime>                // gmtime, strftime
 #include "util/rw/MmapReader.h"
 #include "args.h"
 #include <boost/make_shared.hpp>
