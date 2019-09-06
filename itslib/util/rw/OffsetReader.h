@@ -1,5 +1,6 @@
 #ifndef _UTIL_RW_OFFSETREADER_H__
 #define _UTIL_RW_OFFSETREADER_H__
+#include <inttypes.h>
 
 // very low overhead, only adds baseoffset to positions.
 // does not check size.

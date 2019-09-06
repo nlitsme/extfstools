@@ -1,14 +1,12 @@
 #ifndef _UTIL_READWRITER_H__
 #define _UTIL_READWRITER_H__
-#include <boost/shared_ptr.hpp>
 #include <string>
 #include <stdio.h>
 #include <algorithm>
+#include <memory>
 
 #include "util/endianutil.h"
 
-class ReadWriter;
-typedef boost::shared_ptr<ReadWriter> ReadWriter_ptr;
 class ReadWriter {
     bool _readonly;
 public:
@@ -271,6 +269,8 @@ public:
     virtual void write16be(uint64_t ofs, uint16_t x) { setpos(ofs); write16be(x); }
     virtual void write8(uint64_t ofs, uint8_t x) { setpos(ofs); write8(x); }
 
-
 };
+
+typedef std::shared_ptr<ReadWriter> ReadWriter_ptr;
+
 #endif

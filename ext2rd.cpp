@@ -12,9 +12,7 @@
 #include "util/rw/BlockDevice.h"
 #include "util/rw/OffsetReader.h"
 #include "args.h"
-#include <boost/make_shared.hpp>
-#include <boost/shared_ptr.hpp>
-#include <boost/function.hpp>
+#include <memory>
 #include <sys/stat.h>
 
 //  ~/gitprj/repos/linux/fs/ext2/ext2.h
@@ -301,7 +299,7 @@ struct SuperBlock  {
         return buf;
     }
 };
-typedef boost::function<bool(const uint8_t*)> BLOCKCALLBACK;
+typedef std::function<bool(const uint8_t*)> BLOCKCALLBACK;
 struct ExtentNode {
 
     virtual ~ExtentNode() { }
@@ -406,7 +404,7 @@ struct ExtentHeader {
 
 struct Extent {
     ExtentHeader eh;
-    std::vector< boost::shared_ptr<ExtentNode> > extents;
+    std::vector< std::shared_ptr<ExtentNode> > extents;
 
     void parse(const uint8_t *first)
     {
@@ -421,9 +419,9 @@ struct Extent {
 
         for (unsigned i=0 ; i<eh.eh_entries ; i++) {
             if (eh.eh_depth==0)
-                extents.push_back(boost::make_shared<ExtentLeaf>(p));
+                extents.push_back(std::make_shared<ExtentLeaf>(p));
             else
-                extents.push_back(boost::make_shared<ExtentInternal>(p));
+                extents.push_back(std::make_shared<ExtentInternal>(p));
             p+=12;
         }
     }
@@ -952,7 +950,7 @@ uint32_t searchpath(Ext2FileSystem&fs, uint32_t nr, std::string path)
 }
 // =============================================================================
 struct action {
-    typedef boost::shared_ptr<action> ptr;
+    typedef std::shared_ptr<action> ptr;
     static ptr parse(const std::string& arg);
     virtual ~action() { }
 
@@ -1119,23 +1117,23 @@ action::ptr action::parse(const std::string& arg)
         size_t ix= arg.find(":", 1);
 
         if (ix==arg.npos) {
-            return boost::make_shared<hexdumpinode>(strtoul(&arg[1],0,0));
+            return std::make_shared<hexdumpinode>(strtoul(&arg[1],0,0));
         }
         else {
-            return boost::make_shared<exportinode>(strtoul(&arg[1],0,0), arg.substr(ix+1));
+            return std::make_shared<exportinode>(strtoul(&arg[1],0,0), arg.substr(ix+1));
         }
     }
     else {
         size_t ix= arg.find(":", 0);
         if (ix==arg.npos)
-            return boost::make_shared<hexdumpfile>(arg);
+            return std::make_shared<hexdumpfile>(arg);
 
 // /path:outfile
 // /path/:outdir
         if (ix>0 && arg[ix-1]=='/')
-            return boost::make_shared<exportdirectory>(arg.substr(0,ix-1), arg.substr(ix+1));
+            return std::make_shared<exportdirectory>(arg.substr(0,ix-1), arg.substr(ix+1));
         else
-            return boost::make_shared<exportfile>(arg.substr(0,ix), arg.substr(ix+1));
+            return std::make_shared<exportfile>(arg.substr(0,ix), arg.substr(ix+1));
     }
 }
 
@@ -1386,9 +1384,9 @@ int main(int argc,char**argv)
     {
         if (argv[i][0]=='-') switch(argv[i][1])
         {
-            case 'l': actions.push_back(boost::make_shared<listfiles>()); break;
-            case 'v': actions.push_back(boost::make_shared<verboselistfiles>()); break;
-            case 'd': actions.push_back(boost::make_shared<dumpfs>()); break;
+            case 'l': actions.push_back(std::make_shared<listfiles>()); break;
+            case 'v': actions.push_back(std::make_shared<verboselistfiles>()); break;
+            case 'd': actions.push_back(std::make_shared<dumpfs>()); break;
             case 'o': offsets.push_back(getintarg(argv, i, argc)); break;
             case 'B': openasblockdev= true; break;
             case 'b': 
@@ -1401,7 +1399,7 @@ int main(int argc,char**argv)
                           return 1;
                       }
                       uint32_t last= *q=='-' ? strtol(q+1, &q, 0) : first+1;
-                      actions.push_back(boost::make_shared<dumpblocks>(first, last));
+                      actions.push_back(std::make_shared<dumpblocks>(first, last));
                       }
                       break;
             default:
@@ -1419,11 +1417,11 @@ int main(int argc,char**argv)
 
     ReadWriter_ptr r;
     if (openasblockdev)
-        r= boost::shared_ptr<BlockDevice>(new BlockDevice(fsfile, BlockDevice::readonly));
+        r= std::shared_ptr<BlockDevice>(new BlockDevice(fsfile, BlockDevice::readonly));
     else
-        r= boost::shared_ptr<MmapReader>(new MmapReader(fsfile, MmapReader::readonly));
+        r= std::shared_ptr<MmapReader>(new MmapReader(fsfile, MmapReader::readonly));
     if (!offsets.empty()) {
-        r= boost::make_shared<OffsetReader>(r, offsets.front(), r->size()-offsets.front());
+        r= std::make_shared<OffsetReader>(r, offsets.front(), r->size()-offsets.front());
         offsets.pop_front();
     }
 
@@ -1431,9 +1429,9 @@ int main(int argc,char**argv)
     ByteVector expanded;
 
     if (SparseReader::issparse(r)) {
-        r= boost::make_shared<SparseReader>(r);
+        r= std::make_shared<SparseReader>(r);
         if (!offsets.empty()) {
-            r= boost::make_shared<OffsetReader>(r, offsets.front(), r->size()-offsets.front());
+            r= std::make_shared<OffsetReader>(r, offsets.front(), r->size()-offsets.front());
             offsets.pop_front();
         }
     }

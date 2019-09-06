@@ -19,10 +19,6 @@
 #include "util/wintypes.h"
 #include "util/endianutil.h"
 #include "util/chariterators.h"
-#include <boost/version.hpp>
-#if BOOST_VERSION >= 104300
-#include <boost/range.hpp>
-#endif
 
 
 typedef std::vector<std::string> StringList;
@@ -472,13 +468,11 @@ std::string vhexdump(const T& buf, int nDumpUnitSize)
 {
     return hexdump((const uint8_t*)&buf[0], (sizeof(typename T::value_type)*buf.size())/nDumpUnitSize, nDumpUnitSize);
 }
-#if BOOST_VERSION >= 104300
 template<typename R>
 std::string rhexdump(R range)
 {
-    return hexdump(boost::begin(range), boost::size(range), sizeof(*boost::begin(range)));
+    return hexdump(std::begin(range), std::size(range), sizeof(*std::begin(range)));
 }
-#endif
 
 // produce exact representation of data, representing nonprintable characters
 //  escaped or as hex dumps
@@ -554,15 +548,13 @@ std::string base64_encode(P data, size_t n)
     }
     return b64;
 }
-#if BOOST_VERSION >= 104300
 template<typename R>
 std::string base64_encode(const R& data)
 {
-    if (boost::empty(data))
+    if (std::empty(data))
         return "";
     return base64_encode((const uint8_t*)&data[0], data.size());
 }
-#endif
 
 ByteVector base64_decode(const std::string& str);
 

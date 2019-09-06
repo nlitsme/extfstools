@@ -8,7 +8,7 @@
 #include <sys/time.h>
 #endif
 
-#ifdef __MACH__
+#ifdef TARGET_OS_MAC
 #include <sys/disk.h>
 #endif
 #ifdef __linux__
@@ -18,6 +18,10 @@
 #include <sys/ioctl.h>
 #endif
 
+#if defined(__cplusplus) && __cplusplus >= 201103L 
+// http://gcc.1065356.n8.nabble.com/PR-89864-gcc-fails-to-build-bootstrap-with-XCode-10-2-td1578565.html
+#  define _Atomic volatile 
+#endif 
 #include <boost/interprocess/mapped_region.hpp>
 #include <boost/interprocess/file_mapping.hpp>
 #include <boost/interprocess/anonymous_shared_memory.hpp>

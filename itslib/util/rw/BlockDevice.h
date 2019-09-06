@@ -9,14 +9,23 @@
 #endif
 
 #ifdef __MACH__
+#ifdef __APPLE__
+#include "TargetConditionals.h"
+#endif
+#if !TARGET_OS_IPHONE
+// sys/disk.h is not in the ios sdk
 #include <sys/disk.h>
 #endif
-#ifdef __linux__
+#endif
+#if defined(_ANDROID) || defined(__linux__)
 #include <linux/fs.h>
+extern "C" int futimes(int fd, const struct timeval tv[2]);
 #endif
 #ifndef _WIN32
+#include <unistd.h>     // ftruncate
 #include <sys/ioctl.h>
 #endif
+
 #include <fcntl.h>
 
 class BlockDevice : public ReadWriter {
@@ -65,10 +74,12 @@ public:
             throw posixerror("ioctl(DKIOCGETBLOCKSIZE)");
 #endif
 #ifdef BLKGETSIZE
-        _bksize = 512;
-        if (-1==ioctl(_f, BLKGETSIZE64, &_bkcount))
+        uint64_t devsize;
+        if (-1==ioctl(_f, BLKGETSIZE64, &devsize))
             throw posixerror("ioctl(BLKGETSIZE64)");
-        _bkcount /= _bksize;
+        if (-1==ioctl(_f, BLKBSZGET, &_bksize))
+               throw posixerror("ioctl(BLKBSZGET)");
+        _bkcount = devsize / _bksize;
 #endif
 
         _curpos= 0;

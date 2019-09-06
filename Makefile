@@ -7,17 +7,17 @@ OPT=-O0
 endif
 
 clean:
-	$(RM) $(wildcard *.o) *.dSYM ext2rd ext2dump
+	$(RM) -r $(wildcard *.o) *.dSYM ext2rd ext2dump
 
 ext2rd: ext2rd.o  stringutils.o
 ext2dump: ext2dump.o stringutils.o
 
-CXXFLAGS=-g -Wall -c $(OPT) -I itslib -D_UNIX -D_NO_RAPI -I /usr/local/include -I . -std=c++11
+CXXFLAGS=-g -Wall -c $(OPT) -I itslib -D_UNIX -D_NO_RAPI -I /usr/local/include -I . -std=c++17
 
 # include CDEFS from make commandline
 CXXFLAGS+=$(CDEFS) -MD
 
-LDFLAGS+=-g -Wall -L/usr/local/lib -std=c++11
+LDFLAGS+=-g -Wall -L/usr/local/lib -std=c++17
 
 vpath .cpp itslib/src .
 
