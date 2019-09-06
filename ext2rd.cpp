@@ -826,7 +826,13 @@ struct Ext2FileSystem {
     }
     void parsegroupdescs(ReadWriter_ptr r)
     {
-        r->setpos(super.blocksize());
+        auto bgdescpos = super.blocksize();
+
+        // when the blocksize == 1024, the superblock will be in block#1,
+        // so the block group descriptors must be in block#2
+        if (bgdescpos == 1024)
+            bgdescpos *= 2;
+        r->setpos(bgdescpos);
 
         bgdescs.resize(super.ngroups());
 
