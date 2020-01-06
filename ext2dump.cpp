@@ -6,6 +6,7 @@
 #include <vector>
 #include <list>
 #include <algorithm>
+#include <functional>
 #include <string>
 #include <ctime>                // gmtime, strftime
 #include "util/rw/MmapReader.h"
@@ -379,7 +380,7 @@ struct Inode {
         i_blocks= get32le(p);  p+=4;
         i_flags= get32le(p);  p+=4;
         i_osd1= get32le(p);  p+=4;
-        if ((i_mode&0xf000)==EXT4_S_IFLNK && i_size<60) {
+        if (issymlink()) {
             symlink= std::string((const char*)p, 60);
             p+=60;
         }
@@ -397,11 +398,16 @@ struct Inode {
         i_faddr= get32le(p);  p+=4;
         memcpy(i_osd2, p, 12); p+=12;
     }
+
+    bool issymlink() const {
+      return (i_mode&0xf000)==EXT4_S_IFLNK && i_size<60;
+    }
+
     void dump() const
     {
         printf("m:%06o %4d o[%5d %5d] t[%10d %10d %10d %10d]  %12lld [b:%8d] F:%05x X:%08x %s\n",
                 i_mode, i_links_count, i_gid, i_uid, i_atime, i_ctime, i_mtime, i_dtime, datasize(), i_blocks, i_flags, i_file_acl, hexdump(i_osd2, 12).c_str());
-        if ((i_mode&0xf000)==EXT4_S_IFLNK && i_size<60) {
+        if (issymlink()) {
             printf("symlink: %s\n", symlink.c_str());
         }
         else if (i_flags&EXT4_EXTENTS_FL) {
@@ -420,7 +426,7 @@ struct Inode {
 
     bool enumblocks(const SuperBlock &super, BLOCKCALLBACK cb) const
     {
-        if ((i_mode&0xf000)==EXT4_S_IFLNK && i_size<60) {
+        if (issymlink()) {
             // no blocks
         }
         else if (i_flags&EXT4_EXTENTS_FL) {
