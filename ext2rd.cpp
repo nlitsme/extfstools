@@ -1006,13 +1006,30 @@ struct exportinode : action {
             }
             return;
         }
-        FileReader w(savepath, FileReader::opencreate);
-        i.enumblocks(fs.super, [&](const uint8_t *first)->bool {
-            w.write(first, fs.super.blocksize());
-            return true;
-        });
-        w.setpos(i.datasize());
-        w.truncate(i.datasize());
+
+        if (true) {
+            FileReader w(savepath, FileReader::opencreate);
+
+            i.enumblocks(fs.super, [&](const uint8_t *first)->bool {
+                w.write(first, fs.super.blocksize());
+                return true;
+            });
+            w.setpos(i.datasize());
+            w.truncate(i.datasize());
+
+            // end of block closes the file
+        }
+
+        // restore mode bits
+        chmod(savepath.c_str(), i.i_mode);
+
+        // restore last-access and modification timestamps.
+        struct timeval tv[2];
+        tv[0].tv_sec = i.i_atime; tv[0].tv_usec = 0;
+        tv[1].tv_sec = i.i_mtime; tv[1].tv_usec = 0;
+        lutimes(savepath.c_str(), tv);
+
+
     }
 };
 struct hexdumpfile : action {
