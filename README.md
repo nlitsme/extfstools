@@ -5,6 +5,8 @@ Some tools for reading ext2/ext3/ext4 filesystem images.
 
 I use these mostly to extract files from android system images.
 
+Note that ext4 is not fully supported, some files may not be extracted.
+
 EXAMPLE
 =======
 
