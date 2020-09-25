@@ -14,6 +14,7 @@
 #include "util/rw/OffsetReader.h"
 #include "args.h"
 #include <memory>
+#include <system_error>
 #include <sys/stat.h>
 
 //  ~/gitprj/repos/linux/fs/ext2/ext2.h
@@ -1060,6 +1061,13 @@ struct exportdirectory : action {
     exportdirectory(const std::string& ext2path, const std::string& savepath)
         : ext2path(ext2path), savepath(savepath)
     {
+        struct stat st;
+        if (-1==stat(savepath.c_str(), &st)) {
+            if (-1==mkdir(savepath.c_str(), 0777))
+                throw std::system_error(errno, std::generic_category(), "mkdir");
+        }
+        else if (!S_ISDIR(st.st_mode))
+            throw std::runtime_error("savepath is not a directory");
     }
 
     void perform(Ext2FileSystem &fs) override
@@ -1071,7 +1079,7 @@ struct exportdirectory : action {
         }
         recursedirs(fs, ino, ".", [&](const DirectoryEntry& e, const std::string& path) {
             if (e.filetype==EXT4_FT_DIR) {
-                if (-1==mkdir((savepath+"/"+path+"/"+e.name).c_str(), 0777)) {
+                if (-1==mkdir((savepath+"/"+path+"/"+e.name).c_str(), 0777) && errno!=EEXIST) {
                     perror("mkdir(savepath)");
                 }
             }
@@ -1401,6 +1409,8 @@ int main(int argc,char**argv)
     std::vector<action::ptr> actions;
     bool openasblockdev= false;
 
+    try {
+
     for (int i=1 ; i<argc ; i++)
     {
         if (argv[i][0]=='-') switch(argv[i][1])
@@ -1434,7 +1444,6 @@ int main(int argc,char**argv)
         }
     }
 
-    try {
 
     ReadWriter_ptr r;
     if (openasblockdev)
@@ -1463,6 +1472,7 @@ int main(int argc,char**argv)
 
     }
     catch(const char*msg) { printf("EXCEPTION: %s\n", msg); }
+    catch(const std::exception& e) { printf("EXCEPTION: %s\n", e.what()); }
     catch(...) { printf("EXCEPTION - did you specify -B for a block device?\n"); }
 }
 
