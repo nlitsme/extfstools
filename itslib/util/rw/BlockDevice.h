@@ -19,7 +19,7 @@
 #endif
 #if defined(_ANDROID) || defined(__linux__)
 #include <linux/fs.h>
-extern "C" int futimes(int fd, const struct timeval tv[2]);
+#include <sys/time.h>
 #endif
 #ifndef _WIN32
 #include <unistd.h>     // ftruncate
