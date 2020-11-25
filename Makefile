@@ -6,13 +6,18 @@ else
 OPT=-O0
 endif
 
+ifneq ($(wildcard $(SystemRoot)/explorer.exe),)
+OSTYPE=windows
+endif
+
 clean:
 	$(RM) -r $(wildcard *.o) *.dSYM ext2rd ext2dump
 
 ext2rd: ext2rd.o  stringutils.o
 ext2dump: ext2dump.o stringutils.o
 
-CXXFLAGS=-g -Wall -c $(OPT) -I itslib -D_UNIX -D_NO_RAPI -I /usr/local/include -I . -std=c++17
+CXXFLAGS+=-g -Wall -c $(OPT) -I itslib -D_UNIX -D_NO_RAPI -I /usr/local/include -I . -std=c++17
+CXXFLAGS+=$(if $(filter $(OSTYPE),windows),-I c:/local/boost_1_74_0)
 
 # include CDEFS from make commandline
 CXXFLAGS+=$(CDEFS) -MD

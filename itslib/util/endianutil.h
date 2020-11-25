@@ -4,6 +4,7 @@
 #include <stdint.h>
 //#include "vectorutils.h"
 #include <iterator>
+#include <algorithm>
 
 #ifdef __LITTLE_ENDIAN__ 
 
@@ -105,9 +106,9 @@ template<typename BYTEITER, typename V>
     size_t vectorget16le(BYTEITER p, V& v, size_t n)
     {
         v.resize(n);
-        memcpy(&v.front(), p, n*sizeof(V::value_type));
+        memcpy(&v.front(), p, n*sizeof(typename V::value_type));
 #if __BYTE_ORDER == __BIG_ENDIAN
-        std::for_each(v.begin(), v.end(), [](V::value_type& x) { x= swab16(x);});
+        std::for_each(v.begin(), v.end(), [](typename V::value_type& x) { x= swab16(x);});
 #endif
         return v.size();
     }
