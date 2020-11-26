@@ -10,11 +10,13 @@ ifneq ($(wildcard $(SystemRoot)/explorer.exe $(SYSTEMROOT)/explorer.exe),)
 OSTYPE=windows
 endif
 
+O=$(if $(filter $(OSTYPE),windows),.obj,.o)
+E=$(if $(filter $(OSTYPE),windows),.exe,)
 clean:
-	$(RM) -r $(wildcard *.o) *.dSYM ext2rd ext2dump
+	$(RM) -r $(wildcard *$(O)) *.dSYM ext2rd ext2dump
 
-ext2rd: ext2rd.o  stringutils.o
-ext2dump: ext2dump.o stringutils.o
+ext2rd$(E): ext2rd$(O)  stringutils$(O)
+ext2dump$(E): ext2dump$(O) stringutils$(O)
 
 CXXFLAGS+=-g -Wall -c $(OPT) -I itslib -D_UNIX -D_NO_RAPI -I /usr/local/include -I . -std=c++17
 CXXFLAGS+=$(if $(filter $(OSTYPE),windows),-I c:/local/boost_1_74_0)
@@ -22,17 +24,19 @@ CXXFLAGS+=$(if $(filter $(OSTYPE),windows),-I c:/local/boost_1_74_0)
 # include CDEFS from make commandline
 CXXFLAGS+=$(CDEFS) -MD
 
+CXXFLAGS+=-DNOMINMAX
+
 LDFLAGS+=-g -Wall -L/usr/local/lib -std=c++17
 
 vpath .cpp itslib/src .
 
-%.o: itslib/src/%.cpp
+%$(O): itslib/src/%.cpp
 	$(CXX) $(CXXFLAGS) $^ -o $@ 
 
-%.o: %.cpp
+%$(O): %.cpp
 	$(CXX) $(CXXFLAGS) $(filter %.cpp,$^) -o $@ 
 
-%: %.o
+%$(E): %$(O)
 	$(CXX) $(LDFLAGS) $^ -o $@
 
 
