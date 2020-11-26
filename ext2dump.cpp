@@ -1150,6 +1150,7 @@ int main(int argc,char**argv)
                   printf("   ext2path   hexdump ext2fs path\n");
                   printf("   ext2path:path   save ext2fs path to path\n");
                   printf("   ext2path/:path  recursively save ext2fs dir to path\n");
+                  return 1;
         }
         else if (fsfile.empty())
             fsfile= argv[i];
