@@ -17,6 +17,23 @@
 #include <system_error>
 #include <sys/stat.h>
 
+#ifdef _WIN32
+void lutimes(const char*path, const struct timeval *times)
+{
+}
+int symlink(const char *src, const char *dst)
+{
+    return 0;
+}
+int mkdir(const char *src, int mode)
+{
+    return 0;
+}
+#endif
+
+
+
+
 //  ~/gitprj/repos/linux/fs/ext2/ext2.h
 //  todo: add 64bit support from ext4
 // todo: create ExtentsFileReader and BlocksFileReader
@@ -998,7 +1015,7 @@ struct exportinode : action {
         if (i._empty) {
           return;
         }
-
+#ifndef _WIN32
         if(i.issymlink()) {
             if(symlink(i.symlink.c_str(), savepath.c_str()) != 0) {
                 std::string err_msg = "Failed to create symlink: " + savepath + " -> " + i.symlink;
@@ -1006,7 +1023,7 @@ struct exportinode : action {
             }
             return;
         }
-
+#endif
         if (true) {
             FileReader w(savepath, FileReader::opencreate);
 
@@ -1028,8 +1045,6 @@ struct exportinode : action {
         tv[0].tv_sec = i.i_atime; tv[0].tv_usec = 0;
         tv[1].tv_sec = i.i_mtime; tv[1].tv_usec = 0;
         lutimes(savepath.c_str(), tv);
-
-
     }
 };
 struct hexdumpfile : action {

@@ -13,6 +13,20 @@
 #include "args.h"
 #include <sys/stat.h>
 
+#ifdef _WIN32
+void lutimes(const char*path, const struct timeval *times)
+{
+}
+int symlink(const char *src, const char *dst)
+{
+    return 0;
+}
+int mkdir(const char *src, int mode)
+{
+    return 0;
+}
+#endif
+
 std::string timestr(uint32_t t32)
 {
     time_t t = t32;
