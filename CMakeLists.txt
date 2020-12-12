@@ -40,15 +40,16 @@ add_library(itslib STATIC itslib/src/stringutils.cpp)
 target_include_directories(itslib PUBLIC itslib)
 target_compile_definitions(itslib PUBLIC _UNIX _NO_RAPI)
 
-#add_library(cpputils INTERFACE)
-#target_include_directories(cpputils INTERFACE ../cpputils)
-
-find_package(Boost COMPONENTS headers)
+find_package(Boost COMPONENTS date_time)
 
 add_executable(ext2rd ext2rd.cpp)
-target_link_libraries(ext2rd Boost::headers itslib)
+target_link_libraries(ext2rd  itslib)
+target_link_libraries(ext2rd  Boost::date_time)
+target_link_directories(ext2rd PUBLIC ${Boost_LIBRARY_DIRS})
 
 add_executable(ext2dump ext2dump.cpp)
-target_link_libraries(ext2dump Boost::headers itslib)
+target_link_libraries(ext2dump  itslib)
+target_link_libraries(ext2dump   Boost::date_time)
+target_link_directories(ext2dump PUBLIC ${Boost_LIBRARY_DIRS})
 
 
