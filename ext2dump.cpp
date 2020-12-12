@@ -207,7 +207,7 @@ struct ExtentLeaf : ExtentNode {
     }
     virtual void dump() const
     {
-        printf("blk:%08x, l=%d, %010llx\n", ee_block, ee_len, startblock());
+        printf("blk:%08x, l=%d, %010llx\n", ee_block, ee_len, (unsigned long long)startblock());
     }
     uint64_t startblock() const
     {
@@ -243,7 +243,7 @@ struct ExtentInternal : ExtentNode {
     }
     virtual void dump() const
     {
-        printf("blk:%08x, [%d] %010llx\n", ei_block, ei_unused, leafnode());
+        printf("blk:%08x, [%d] %010llx\n", ei_block, ei_unused, (unsigned long long)leafnode());
     }
     uint64_t leafnode() const
     {
@@ -420,7 +420,7 @@ struct Inode {
     void dump() const
     {
         printf("m:%06o %4d o[%5d %5d] t[%10d %10d %10d %10d]  %12lld [b:%8d] F:%05x X:%08x %s\n",
-                i_mode, i_links_count, i_gid, i_uid, i_atime, i_ctime, i_mtime, i_dtime, datasize(), i_blocks, i_flags, i_file_acl, hexdump(i_osd2, 12).c_str());
+                i_mode, i_links_count, i_gid, i_uid, i_atime, i_ctime, i_mtime, i_dtime, (unsigned long long)datasize(), i_blocks, i_flags, i_file_acl, hexdump(i_osd2, 12).c_str());
         if (issymlink()) {
             printf("symlink: %s\n", symlink.c_str());
         }
