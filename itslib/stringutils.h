@@ -26,6 +26,27 @@ typedef std::vector<std::Wstring> WStringList;
 
 typedef std::vector<std::tstring> TStringList;
 
+#if __cplusplus <= 201103L
+namespace std {
+
+#if __cplusplus < 201103L
+#pragma message("Note that this code will need at least c++11")
+#endif
+
+template<typename V>
+    size_t size(const V& v)
+    {
+        return v.size();
+    }
+template<typename V>
+    bool empty(const V& v)
+    {
+        return v.empty();
+    }
+}
+#endif
+
+
 // preprocessor helper macro
 #define STR$(s) XSTR$(s)
 #define XSTR$(s) #s
