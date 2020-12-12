@@ -47,6 +47,17 @@ ext2dump
        ext2path/:path  recursively save ext2fs dir to path
 
 
+Build instructions
+==================
+
+There are two ways of building `extfstools`:
+ * using cmake, actually, invoked using the default Makefile.
+   * type: `make`  or `make vc` for a windows build.
+ * using make with Makefile.unix
+   * type: `make -f Makefile.unix`, this should also work in windows.
+
+
+
 AUTHOR
 ======
 
