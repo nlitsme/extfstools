@@ -1132,6 +1132,19 @@ void expandsparse(const uint8_t *first, const uint8_t *last, ByteVector& data)
         p= pchunk+chunksize;
     }
 }
+void usage()
+{
+    printf("Usage: ext2dump [-l] [-d] <fsname> [exports...]\n");
+    printf("     -l       lists all files\n");
+    printf("     -d       verbosely lists all inodes\n");
+    printf("     -o OFS1/OFS2  specify offset to efs/sparse image\n");
+    printf("     -b from[-until]   hexdump blocks\n");
+    printf("   #123       hexdump inode 123\n");
+    printf("   #123:path  save inode 123 to path\n");
+    printf("   ext2path   hexdump ext2fs path\n");
+    printf("   ext2path:path   save ext2fs path to path\n");
+    printf("   ext2path/:path  recursively save ext2fs dir to path\n");
+}
 int main(int argc,char**argv)
 {
     std::list<uint64_t> offsets;
@@ -1161,16 +1174,7 @@ int main(int argc,char**argv)
                       }
                       break;
             default:
-                  printf("Usage: ext2dump [-l] [-d] <fsname> [exports...]\n");
-                  printf("     -l       lists all files\n");
-                  printf("     -d       verbosely lists all inodes\n");
-                  printf("     -o OFS1/OFS2  specify offset to efs/sparse image\n");
-                  printf("     -b from[-until]   hexdump blocks\n");
-                  printf("   #123       hexdump inode 123\n");
-                  printf("   #123:path  save inode 123 to path\n");
-                  printf("   ext2path   hexdump ext2fs path\n");
-                  printf("   ext2path:path   save ext2fs path to path\n");
-                  printf("   ext2path/:path  recursively save ext2fs dir to path\n");
+                  usage();
                   return 1;
         }
         else if (fsfile.empty())
@@ -1179,6 +1183,12 @@ int main(int argc,char**argv)
             actions.push_back(action::parse(argv[i]));
         }
     }
+    if (fsfile.empty())
+    {
+        usage();
+        return 1;
+    }
+    try {
 #ifdef USE_CPPUTILS
     mappedfile mm(fsfile);
     MemoryReader r(mm.begin(), mm.size());
@@ -1204,4 +1214,22 @@ int main(int argc,char**argv)
     for (auto a : actions)
         a->perform(fs);
 
+    }
+    catch(const char*msg) {
+        printf("EXCEPTION: %s\n", msg);
+        return 1;
+    }
+    catch(const std::string& msg) {
+        printf("EXCEPTION: %s\n", msg.c_str());
+        return 1;
+    }
+    catch(std::exception& e) {
+        printf("EXCEPTION: %s\n", e.what());
+        return 1;
+    }
+    catch(...) {
+        printf("UNKNOWN EXCEPTION\n");
+        return 1;
+    }
+    return 0;
 }
