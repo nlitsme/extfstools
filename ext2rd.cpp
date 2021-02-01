@@ -1520,9 +1520,23 @@ int main(int argc,char**argv)
         a->perform(fs);
 
     }
-    catch(const char*msg) { printf("EXCEPTION: %s\n", msg); }
-    catch(const std::exception& e) { printf("EXCEPTION: %s\n", e.what()); }
-    catch(...) { printf("EXCEPTION - did you specify -B for a block device?\n"); }
+    catch(const char*msg) {
+        printf("EXCEPTION: %s\n", msg);
+        return 1;
+    }
+    catch(const std::string& msg) {
+        printf("EXCEPTION: %s\n", msg.c_str());
+        return 1;
+    }
+    catch(const std::exception& e) {
+        printf("EXCEPTION: %s\n", e.what());
+        return 1;
+    }
+    catch(...) {
+        printf("EXCEPTION - did you specify -B for a block device?\n");
+        return 1;
+    }
+    return 0;
 }
 
 
