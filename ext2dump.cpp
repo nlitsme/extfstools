@@ -9,7 +9,14 @@
 #include <functional>
 #include <string>
 #include <ctime>                // gmtime, strftime
+#include <string.h>              // memcpy
+#ifdef USE_CPPUTILS
+#include "mmfile.h"
+#include "util/rw/MemoryReader.h"
+#else
 #include "util/rw/MmapReader.h"
+#endif
+#include "util/rw/FileReader.h"
 #include "args.h"
 #include <sys/stat.h>
 
@@ -1172,7 +1179,12 @@ int main(int argc,char**argv)
             actions.push_back(action::parse(argv[i]));
         }
     }
+#ifdef USE_CPPUTILS
+    mappedfile mm(fsfile);
+    MemoryReader r(mm.begin(), mm.size());
+#else
     MmapReader r(fsfile, MmapReader::readonly);
+#endif
 
     Ext2FileSystem fs;
     ByteVector expanded;

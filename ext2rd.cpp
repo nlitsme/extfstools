@@ -9,7 +9,15 @@
 #include <functional>
 #include <string>
 #include <ctime>                // gmtime, strftime
+
+#ifdef USE_CPPUTILS
+#include "mmfile.h"
+#include "util/rw/MemoryReader.h"
+#else
 #include "util/rw/MmapReader.h"
+#endif
+#include "util/rw/FileReader.h"
+
 #include "util/rw/BlockDevice.h"
 #include "util/rw/OffsetReader.h"
 #include "args.h"
@@ -1477,11 +1485,20 @@ int main(int argc,char**argv)
     }
 
 
+#ifdef USE_CPPUTILS
+    std::shared_ptr<mappedfile> mm;
+#endif
     ReadWriter_ptr r;
     if (openasblockdev)
         r= std::shared_ptr<BlockDevice>(new BlockDevice(fsfile, BlockDevice::readonly));
-    else
+    else {
+#ifdef USE_CPPUTILS
+        mm = std::make_shared<mappedfile>(fsfile);
+        r = std::make_shared<MemoryReader>(mm->begin(), mm->size());
+#else
         r= std::shared_ptr<MmapReader>(new MmapReader(fsfile, MmapReader::readonly));
+#endif
+    }
     if (!offsets.empty()) {
         r= std::make_shared<OffsetReader>(r, offsets.front(), r->size()-offsets.front());
         offsets.pop_front();
