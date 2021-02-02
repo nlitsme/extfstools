@@ -17,7 +17,6 @@ This will export the entire filesystem to 'savedir'
 ext2rd
 ======
 
-
     Usage: ext2rd [-l] [-v] <fsname> [exports...]
          -l       lists all files
          -B       open as block device
@@ -32,20 +31,6 @@ ext2rd
     note: ext2path must not start with a slash
     note2: /dev/rdiskNN is much faster than /dev/diskNN
 
-ext2dump
-========
-
-    Usage: ext2dump [-l] [-d] <fsname> [exports...]
-         -l       lists all files
-         -d       verbosely lists all inodes
-         -o OFS1/OFS2  specify offset to efs/sparse image
-         -b from[-until]   hexdump blocks
-       #123       hexdump inode 123
-       #123:path  save inode 123 to path
-       ext2path   hexdump ext2fs path
-       ext2path:path   save ext2fs path to path
-       ext2path/:path  recursively save ext2fs dir to path
-
 
 Build instructions
 ==================
@@ -55,7 +40,6 @@ There are two ways of building `extfstools`:
    * type: `make`  or `make vc` for a windows build.
  * using make with Makefile.unix
    * type: `make -f Makefile.unix`, this should also work in windows.
-
 
 
 AUTHOR

@@ -1,4 +1,4 @@
-all: ext2rd ext2dump
+all: ext2rd
 
 ifeq ($(D),)
 OPT=-O3
@@ -15,10 +15,9 @@ E=$(if $(filter $(OSTYPE),windows),.exe,)
 EXEOPT=$(if $(filter $(OSTYPE),windows),-Fe:,-o)
 
 clean:
-	$(RM) -r $(wildcard *$(O)) *.dSYM ext2rd ext2dump
+	$(RM) -r $(wildcard *$(O)) *.dSYM ext2rd
 
 ext2rd$(E): ext2rd$(O)  stringutils$(O)
-ext2dump$(E): ext2dump$(O) stringutils$(O)
 
 CXXFLAGS+=-g -Wall -c $(OPT) -I itslib -D_UNIX -D_NO_RAPI -I /usr/local/include -I . -std=c++17
 CXXFLAGS+=$(if $(filter $(OSTYPE),windows),-I c:/local/boost_1_74_0)

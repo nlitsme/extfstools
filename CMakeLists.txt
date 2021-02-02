@@ -81,8 +81,4 @@ add_executable(ext2rd ext2rd.cpp)
 target_link_libraries(ext2rd  itslib)
 target_link_libraries(ext2rd ${MMAPLIB})
 
-add_executable(ext2dump ext2dump.cpp)
-target_link_libraries(ext2dump  itslib)
-target_link_libraries(ext2dump ${MMAPLIB})
-
 
