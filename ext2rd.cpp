@@ -26,6 +26,8 @@
 #include <sys/stat.h>
 
 #ifdef _WIN32
+#include <direct.h>
+
 void lutimes(const char*path, const struct timeval *times)
 {
 }
@@ -35,7 +37,7 @@ int symlink(const char *src, const char *dst)
 }
 int mkdir(const char *src, int mode)
 {
-    return 0;
+    return _mkdir(src);
 }
 #endif
 
