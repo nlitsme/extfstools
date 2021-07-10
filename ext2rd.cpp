@@ -363,7 +363,7 @@ struct ExtentLeaf : ExtentNode {
     }
     virtual void dump() const
     {
-        printf("blk:%08x, l=%d, %010llx\n", ee_block, ee_len, (unsigned long long) startblock());
+        printf("blk:%08x, l=%d, %010" PRIx64 "\n", ee_block, ee_len, startblock());
     }
     uint64_t startblock() const
     {
@@ -399,7 +399,7 @@ struct ExtentInternal : ExtentNode {
     }
     virtual void dump() const
     {
-        printf("blk:%08x, [%d] %010llx\n", ei_block, ei_unused, (unsigned long long) leafnode());
+        printf("blk:%08x, [%d] %010" PRIx64 "\n", ei_block, ei_unused, leafnode());
     }
     uint64_t leafnode() const
     {
@@ -579,8 +579,8 @@ struct Inode {
 
     void dump() const
     {
-        printf("m:%06o %4d o[%5d %5d] t[%10d %10d %10d %10d]  %12llu [b:%8d] F:%05x(%s) X:%08x %s\n",
-                i_mode, i_links_count, i_gid, i_uid, i_atime, i_ctime, i_mtime, i_dtime, (unsigned long long) datasize(), i_blocks, i_flags, fl2str(i_flags).c_str(), i_file_acl, hexdump(i_osd2, 12).c_str());
+        printf("m:%06o %4d o[%5d %5d] t[%10d %10d %10d %10d]  %12" PRIu64 " [b:%8d] F:%05x(%s) X:%08x %s\n",
+                i_mode, i_links_count, i_gid, i_uid, i_atime, i_ctime, i_mtime, i_dtime, datasize(), i_blocks, i_flags, fl2str(i_flags).c_str(), i_file_acl, hexdump(i_osd2, 12).c_str());
         if (issymlink()) {
             printf("symlink: %s\n", symlink.c_str());
         }
@@ -1244,9 +1244,9 @@ class SparseReader : public ReadWriter {
         void dump(uint64_t off) const
         {
             if (isfill)
-                printf("%llx-%llx: fill with %08x\n", (unsigned long long) off, (unsigned long long) off+ndwords*4, value);
+                printf("%" PRIx64 "-%" PRIx64 ": fill with %08x\n", off, off+ndwords*4, value);
             else
-                printf("%llx-%llx: copy from %llx\n", (unsigned long long) off, (unsigned long long) off+ndwords*4, (unsigned long long) offset);
+                printf("%" PRIx64 "-%" PRIx64 ": copy from %" PRIx64 "\n", off, off+ndwords*4, offset);
         }
     };
     std::map<uint64_t, sparserecord> _map;
@@ -1338,7 +1338,7 @@ private:
 
             r->setpos(r->getpos() + chunksize-cnkhdrsize);
         }
-        printf("end of sparse: %llx\n", (unsigned long long) ofs);
+        printf("end of sparse: %" PRIx64 "\n", ofs);
     }
     void copydata(uint64_t sparseofs, uint32_t ndwords, uint64_t expandedofs)
     {
