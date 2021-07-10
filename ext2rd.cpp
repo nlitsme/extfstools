@@ -840,10 +840,6 @@ struct Ext2FileSystem {
 
     void parse(ReadWriter_ptr r)
     {
-        // superblock is always at fixed position 0x400
-        //   ... does that indicate a min blocksize of 0x800 ?
-        //   with smaller blocksize, the groupdescs would overlap with the first superblock
-        //
         r->setpos(sb_offset);
         super.parse(r);
 
