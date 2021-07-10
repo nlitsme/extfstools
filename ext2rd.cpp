@@ -833,6 +833,7 @@ struct Ext2FileSystem {
     std::vector<BlockGroupDescriptor> bgdescs;
 
     std::vector<BlockGroup> groups;
+    uint64_t sb_offset;
 
     Ext2FileSystem() { }
 
@@ -842,7 +843,7 @@ struct Ext2FileSystem {
         //   ... does that indicate a min blocksize of 0x800 ?
         //   with smaller blocksize, the groupdescs would overlap with the first superblock
         //
-        r->setpos(1024);
+        r->setpos(sb_offset);
         super.parse(r);
 
         if (super.s_magic != 0xef53)
@@ -1434,6 +1435,7 @@ void usage()
     printf("     -d       verbosely lists all inodes\n");
     printf("     -o OFS1/OFS2  specify offset to efs/sparse image\n");
     printf("     -b from[-until]   hexdump blocks\n");
+    printf("     -S OFS   specify superblock offset\n");
     printf("   #123       hexdump inode 123\n");
     printf("   #123:path  save inode 123 to path\n");
     printf("   ext2path   hexdump ext2fs path\n");
@@ -1450,6 +1452,7 @@ int main(int argc,char**argv)
     std::string fsfile;
     std::vector<action::ptr> actions;
     bool openasblockdev= false;
+    uint64_t sb_offset = 0x400;
 
     try {
 
@@ -1475,6 +1478,17 @@ int main(int argc,char**argv)
                       actions.push_back(std::make_shared<dumpblocks>(first, last));
                       }
                       break;
+            case 'S':
+                      {
+                      std::string arg= getstrarg(argv,i,argc);
+                      char *q;
+                      sb_offset= strtoul(arg.c_str(), &q, 0);
+                      if (*q!=0) {
+                          printf("invalid -S offset spec\n");
+                          return 1;
+                      }
+		      }
+		      break;
             default:
                       usage();
                   return 1;
@@ -1516,6 +1530,7 @@ int main(int argc,char**argv)
             offsets.pop_front();
         }
     }
+    fs.sb_offset = sb_offset;
     fs.parse(r);
 
     for (auto a : actions)
