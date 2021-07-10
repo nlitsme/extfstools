@@ -834,6 +834,7 @@ struct Ext2FileSystem {
 
     std::vector<BlockGroup> groups;
     uint64_t sb_offset;
+    uint64_t rootdir_in;
 
     Ext2FileSystem() { }
 
@@ -1068,7 +1069,7 @@ struct hexdumpfile : action {
 
     void perform(Ext2FileSystem &fs) override
     {
-        uint32_t ino= searchpath(fs, ROOTDIRINODE, ext2path);
+        uint32_t ino= searchpath(fs, fs.rootdir_in, ext2path);
         if (ino==0) {
             printf("hexdumpfile: path not found\n");
             return;
@@ -1088,7 +1089,7 @@ struct exportfile : action {
 
     void perform(Ext2FileSystem &fs) override
     {
-        uint32_t ino= searchpath(fs, ROOTDIRINODE, ext2path);
+        uint32_t ino= searchpath(fs, fs.rootdir_in, ext2path);
         if (ino==0) {
             printf("exportfile: path not found\n");
             return;
@@ -1115,7 +1116,7 @@ struct exportdirectory : action {
 
     void perform(Ext2FileSystem &fs) override
     {
-        uint32_t ino= searchpath(fs, ROOTDIRINODE, ext2path);
+        uint32_t ino= searchpath(fs, fs.rootdir_in, ext2path);
         if (ino==0) {
             printf("exportdir: path not found\n");
             return;
@@ -1139,7 +1140,7 @@ struct listfiles : action {
     {
         //TreeReconstructor tree;
         //tree.scanfs(fs);
-        recursedirs(fs, ROOTDIRINODE, "", [](const DirectoryEntry& e, const std::string& path) {
+        recursedirs(fs, fs.rootdir_in, "", [](const DirectoryEntry& e, const std::string& path) {
             printf("%9d %s%c %s/%s\n", e.inode,  e.filetype>=8 ? "**":"", "0-dcbpsl"[e.filetype&7], path.c_str(), e.name.c_str());
         });
     }
@@ -1149,7 +1150,7 @@ struct verboselistfiles : action {
     {
         //TreeReconstructor tree;
         //tree.scanfs(fs);
-        recursedirs(fs, ROOTDIRINODE, "", [&fs](const DirectoryEntry& e, const std::string& path) {
+        recursedirs(fs, fs.rootdir_in, "", [&fs](const DirectoryEntry& e, const std::string& path) {
             const Inode &i= fs.getinode(e.inode);
             printf("%9d %s %5d %5d %10d %s [%s%c] %s/%s\n", 
                     e.inode,  
@@ -1436,6 +1437,7 @@ void usage()
     printf("     -o OFS1/OFS2  specify offset to efs/sparse image\n");
     printf("     -b from[-until]   hexdump blocks\n");
     printf("     -S OFS   specify superblock offset\n");
+    printf("     -R inode specify root inode for -l and -d\n");
     printf("   #123       hexdump inode 123\n");
     printf("   #123:path  save inode 123 to path\n");
     printf("   ext2path   hexdump ext2fs path\n");
@@ -1453,6 +1455,7 @@ int main(int argc,char**argv)
     std::vector<action::ptr> actions;
     bool openasblockdev= false;
     uint64_t sb_offset = 0x400;
+    uint64_t rootdir_in = ROOTDIRINODE;
 
     try {
 
@@ -1489,6 +1492,17 @@ int main(int argc,char**argv)
                       }
 		      }
 		      break;
+            case 'R':
+                      {
+                      std::string arg= getstrarg(argv,i,argc);
+                      char *q;
+                      rootdir_in = strtoul(arg.c_str(), &q, 0);
+                      if (*q!=0) {
+                          printf("invalid inode spec\n");
+                          return 1;
+                      }
+                      }
+                      break;
             default:
                       usage();
                   return 1;
@@ -1531,6 +1545,7 @@ int main(int argc,char**argv)
         }
     }
     fs.sb_offset = sb_offset;
+    fs.rootdir_in = rootdir_in;
     fs.parse(r);
 
     for (auto a : actions)
