@@ -223,43 +223,43 @@ struct SuperBlock  {
 
     void dump() const
     {
-        printf("s_inodes_count=%08x\n", s_inodes_count);
-        printf("s_blocks_count=%08x\n", s_blocks_count);
-        printf("s_r_blocks_count=%08x\n", s_r_blocks_count);
-        printf("s_free_blocks_count=%08x\n", s_free_blocks_count);
-        printf("s_free_inodes_count=%08x\n", s_free_inodes_count);
-        printf("s_first_data_block=%08x\n", s_first_data_block);
+        printf("s_inodes_count=0x%08x\n", s_inodes_count);
+        printf("s_blocks_count=0x%08x\n", s_blocks_count);
+        printf("s_r_blocks_count=0x%08x\n", s_r_blocks_count);
+        printf("s_free_blocks_count=0x%08x\n", s_free_blocks_count);
+        printf("s_free_inodes_count=0x%08x\n", s_free_inodes_count);
+        printf("s_first_data_block=0x%08x\n", s_first_data_block);
         printf("s_log_block_size=%d\n", s_log_block_size);
         printf("s_log_frag_size=%d\n", s_log_frag_size);
-        printf("s_blocks_per_group=%08x\n", s_blocks_per_group);
-        printf("s_frags_per_group=%08x\n", s_frags_per_group);
-        printf("s_inodes_per_group=%08x\n", s_inodes_per_group);
-        printf("s_mtime=%08x\n", s_mtime);
-        printf("s_wtime=%08x\n", s_wtime);
-        printf("s_mnt_count=%04x\n", s_mnt_count);
-        printf("s_max_mnt_count=%04x\n", s_max_mnt_count);
-        printf("s_magic=%04x\n", s_magic);
-        printf("s_state=%04x\n", s_state);
-        printf("s_errors=%04x\n", s_errors);
-        printf("s_minor_rev_level=%04x\n", s_minor_rev_level);
-        printf("s_lastcheck=%08x\n", s_lastcheck);
-        printf("s_checkinterval=%08x\n", s_checkinterval);
-        printf("s_creator_os=%08x\n", s_creator_os);
-        printf("s_rev_level=%08x\n", s_rev_level);
-        printf("s_def_resuid=%04x\n", s_def_resuid);
-        printf("s_def_resgid=%04x\n", s_def_resgid);
+        printf("s_blocks_per_group=0x%08x\n", s_blocks_per_group);
+        printf("s_frags_per_group=0x%08x\n", s_frags_per_group);
+        printf("s_inodes_per_group=0x%08x\n", s_inodes_per_group);
+        printf("s_mtime=0x%08x : %s\n", s_mtime, timestr(s_mtime).c_str());
+        printf("s_wtime=0x%08x : %s\n", s_wtime, timestr(s_wtime).c_str());
+        printf("s_mnt_count=0x%04x\n", s_mnt_count);
+        printf("s_max_mnt_count=0x%04x\n", s_max_mnt_count);
+        printf("s_magic=0x%04x\n", s_magic);
+        printf("s_state=0x%04x\n", s_state);
+        printf("s_errors=0x%04x\n", s_errors);
+        printf("s_minor_rev_level=0x%04x\n", s_minor_rev_level);
+        printf("s_lastcheck=0x%08x : %s\n", s_lastcheck, timestr(s_lastcheck).c_str());
+        printf("s_checkinterval=0x%08x\n", s_checkinterval);
+        printf("s_creator_os=0x%08x\n", s_creator_os);
+        printf("s_rev_level=0x%08x\n", s_rev_level);
+        printf("s_def_resuid=0x%04x\n", s_def_resuid);
+        printf("s_def_resgid=0x%04x\n", s_def_resgid);
 
         printf("i->%d, b->%d groups\n", s_inodes_count/s_inodes_per_group, (s_blocks_count+s_blocks_per_group-1)/s_blocks_per_group);
         printf("s_first_ino=%d\n", s_first_ino);
         printf("s_inode_size=%d\n", s_inode_size);
         printf("s_block_group_nr=%d\n", s_block_group_nr);
-        printf("s_feature_compat=%08x: %s\n", s_feature_compat, feat_compat2str(s_feature_compat).c_str());
-        printf("s_feature_incompat=%08x: %s\n", s_feature_incompat, feat_incompat2str(s_feature_incompat).c_str());
-        printf("s_feature_ro_compat=%08x: %s\n", s_feature_ro_compat, feat_rocompat2str(s_feature_ro_compat).c_str());
+        printf("s_feature_compat=0x%08x: %s\n", s_feature_compat, feat_compat2str(s_feature_compat).c_str());
+        printf("s_feature_incompat=0x%08x: %s\n", s_feature_incompat, feat_incompat2str(s_feature_incompat).c_str());
+        printf("s_feature_ro_compat=0x%08x: %s\n", s_feature_ro_compat, feat_rocompat2str(s_feature_ro_compat).c_str());
         printf("s_uuid=%s\n", hexdump(s_uuid, 16).c_str());
         printf("s_volume_name=%s\n", ascdump(s_volume_name, 16).c_str());
         printf("s_last_mounted=%s\n", ascdump(s_last_mounted, 16).c_str());
-        printf("s_algo_bitmap=%08x\n", s_algo_bitmap);
+        printf("s_algo_bitmap=0x%08x\n", s_algo_bitmap);
     }
     static std::string feat_compat2str(uint32_t feat)
     {
