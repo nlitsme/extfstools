@@ -223,43 +223,43 @@ struct SuperBlock  {
 
     void dump() const
     {
-        printf("s_inodes_count=%08x\n", s_inodes_count);
-        printf("s_blocks_count=%08x\n", s_blocks_count);
-        printf("s_r_blocks_count=%08x\n", s_r_blocks_count);
-        printf("s_free_blocks_count=%08x\n", s_free_blocks_count);
-        printf("s_free_inodes_count=%08x\n", s_free_inodes_count);
-        printf("s_first_data_block=%08x\n", s_first_data_block);
+        printf("s_inodes_count=0x%08x\n", s_inodes_count);
+        printf("s_blocks_count=0x%08x\n", s_blocks_count);
+        printf("s_r_blocks_count=0x%08x\n", s_r_blocks_count);
+        printf("s_free_blocks_count=0x%08x\n", s_free_blocks_count);
+        printf("s_free_inodes_count=0x%08x\n", s_free_inodes_count);
+        printf("s_first_data_block=0x%08x\n", s_first_data_block);
         printf("s_log_block_size=%d\n", s_log_block_size);
         printf("s_log_frag_size=%d\n", s_log_frag_size);
-        printf("s_blocks_per_group=%08x\n", s_blocks_per_group);
-        printf("s_frags_per_group=%08x\n", s_frags_per_group);
-        printf("s_inodes_per_group=%08x\n", s_inodes_per_group);
-        printf("s_mtime=%08x\n", s_mtime);
-        printf("s_wtime=%08x\n", s_wtime);
-        printf("s_mnt_count=%04x\n", s_mnt_count);
-        printf("s_max_mnt_count=%04x\n", s_max_mnt_count);
-        printf("s_magic=%04x\n", s_magic);
-        printf("s_state=%04x\n", s_state);
-        printf("s_errors=%04x\n", s_errors);
-        printf("s_minor_rev_level=%04x\n", s_minor_rev_level);
-        printf("s_lastcheck=%08x\n", s_lastcheck);
-        printf("s_checkinterval=%08x\n", s_checkinterval);
-        printf("s_creator_os=%08x\n", s_creator_os);
-        printf("s_rev_level=%08x\n", s_rev_level);
-        printf("s_def_resuid=%04x\n", s_def_resuid);
-        printf("s_def_resgid=%04x\n", s_def_resgid);
+        printf("s_blocks_per_group=0x%08x\n", s_blocks_per_group);
+        printf("s_frags_per_group=0x%08x\n", s_frags_per_group);
+        printf("s_inodes_per_group=0x%08x\n", s_inodes_per_group);
+        printf("s_mtime=0x%08x : %s\n", s_mtime, timestr(s_mtime).c_str());
+        printf("s_wtime=0x%08x : %s\n", s_wtime, timestr(s_wtime).c_str());
+        printf("s_mnt_count=0x%04x\n", s_mnt_count);
+        printf("s_max_mnt_count=0x%04x\n", s_max_mnt_count);
+        printf("s_magic=0x%04x\n", s_magic);
+        printf("s_state=0x%04x\n", s_state);
+        printf("s_errors=0x%04x\n", s_errors);
+        printf("s_minor_rev_level=0x%04x\n", s_minor_rev_level);
+        printf("s_lastcheck=0x%08x : %s\n", s_lastcheck, timestr(s_lastcheck).c_str());
+        printf("s_checkinterval=0x%08x\n", s_checkinterval);
+        printf("s_creator_os=0x%08x\n", s_creator_os);
+        printf("s_rev_level=0x%08x\n", s_rev_level);
+        printf("s_def_resuid=0x%04x\n", s_def_resuid);
+        printf("s_def_resgid=0x%04x\n", s_def_resgid);
 
         printf("i->%d, b->%d groups\n", s_inodes_count/s_inodes_per_group, (s_blocks_count+s_blocks_per_group-1)/s_blocks_per_group);
         printf("s_first_ino=%d\n", s_first_ino);
         printf("s_inode_size=%d\n", s_inode_size);
         printf("s_block_group_nr=%d\n", s_block_group_nr);
-        printf("s_feature_compat=%08x: %s\n", s_feature_compat, feat_compat2str(s_feature_compat).c_str());
-        printf("s_feature_incompat=%08x: %s\n", s_feature_incompat, feat_incompat2str(s_feature_incompat).c_str());
-        printf("s_feature_ro_compat=%08x: %s\n", s_feature_ro_compat, feat_rocompat2str(s_feature_ro_compat).c_str());
+        printf("s_feature_compat=0x%08x: %s\n", s_feature_compat, feat_compat2str(s_feature_compat).c_str());
+        printf("s_feature_incompat=0x%08x: %s\n", s_feature_incompat, feat_incompat2str(s_feature_incompat).c_str());
+        printf("s_feature_ro_compat=0x%08x: %s\n", s_feature_ro_compat, feat_rocompat2str(s_feature_ro_compat).c_str());
         printf("s_uuid=%s\n", hexdump(s_uuid, 16).c_str());
         printf("s_volume_name=%s\n", ascdump(s_volume_name, 16).c_str());
         printf("s_last_mounted=%s\n", ascdump(s_last_mounted, 16).c_str());
-        printf("s_algo_bitmap=%08x\n", s_algo_bitmap);
+        printf("s_algo_bitmap=0x%08x\n", s_algo_bitmap);
     }
     static std::string feat_compat2str(uint32_t feat)
     {
@@ -363,7 +363,7 @@ struct ExtentLeaf : ExtentNode {
     }
     virtual void dump() const
     {
-        printf("blk:%08x, l=%d, %010llx\n", ee_block, ee_len, startblock());
+        printf("blk:%08x, l=%d, %010" PRIx64 "\n", ee_block, ee_len, startblock());
     }
     uint64_t startblock() const
     {
@@ -399,7 +399,7 @@ struct ExtentInternal : ExtentNode {
     }
     virtual void dump() const
     {
-        printf("blk:%08x, [%d] %010llx\n", ei_block, ei_unused, leafnode());
+        printf("blk:%08x, [%d] %010" PRIx64 "\n", ei_block, ei_unused, leafnode());
     }
     uint64_t leafnode() const
     {
@@ -579,7 +579,7 @@ struct Inode {
 
     void dump() const
     {
-        printf("m:%06o %4d o[%5d %5d] t[%10d %10d %10d %10d]  %12lld [b:%8d] F:%05x(%s) X:%08x %s\n",
+        printf("m:%06o %4d o[%5d %5d] t[%10d %10d %10d %10d]  %12" PRIu64 " [b:%8d] F:%05x(%s) X:%08x %s\n",
                 i_mode, i_links_count, i_gid, i_uid, i_atime, i_ctime, i_mtime, i_dtime, datasize(), i_blocks, i_flags, fl2str(i_flags).c_str(), i_file_acl, hexdump(i_osd2, 12).c_str());
         if (issymlink()) {
             printf("symlink: %s\n", symlink.c_str());
@@ -833,16 +833,14 @@ struct Ext2FileSystem {
     std::vector<BlockGroupDescriptor> bgdescs;
 
     std::vector<BlockGroup> groups;
+    uint64_t sb_offset;
+    uint64_t rootdir_in;
 
     Ext2FileSystem() { }
 
     void parse(ReadWriter_ptr r)
     {
-        // superblock is always at fixed position 0x400
-        //   ... does that indicate a min blocksize of 0x800 ?
-        //   with smaller blocksize, the groupdescs would overlap with the first superblock
-        //
-        r->setpos(1024);
+        r->setpos(sb_offset);
         super.parse(r);
 
         if (super.s_magic != 0xef53)
@@ -860,12 +858,17 @@ struct Ext2FileSystem {
     }
     void parsegroupdescs(ReadWriter_ptr r)
     {
-        auto bgdescpos = super.blocksize();
+        uint64_t bgdescpos;
 
-        // when the blocksize == 1024, the superblock will be in block#1,
-        // so the block group descriptors must be in block#2
-        if (bgdescpos == 1024)
-            bgdescpos *= 2;
+        // When the blocksize == 1024, the superblock fills block 1
+        // and the block group descriptors start with block 2.
+        // For larger sizes the superblock fits inside block 0
+        // and the block group descriptors start with block 1.
+        if (super.blocksize() == 1024)
+            bgdescpos = 2048;
+        else
+            bgdescpos = super.blocksize();
+
         r->setpos(bgdescpos);
 
         bgdescs.resize(super.ngroups());
@@ -1067,7 +1070,7 @@ struct hexdumpfile : action {
 
     void perform(Ext2FileSystem &fs) override
     {
-        uint32_t ino= searchpath(fs, ROOTDIRINODE, ext2path);
+        uint32_t ino= searchpath(fs, fs.rootdir_in, ext2path);
         if (ino==0) {
             printf("hexdumpfile: path not found\n");
             return;
@@ -1087,7 +1090,7 @@ struct exportfile : action {
 
     void perform(Ext2FileSystem &fs) override
     {
-        uint32_t ino= searchpath(fs, ROOTDIRINODE, ext2path);
+        uint32_t ino= searchpath(fs, fs.rootdir_in, ext2path);
         if (ino==0) {
             printf("exportfile: path not found\n");
             return;
@@ -1114,7 +1117,7 @@ struct exportdirectory : action {
 
     void perform(Ext2FileSystem &fs) override
     {
-        uint32_t ino= searchpath(fs, ROOTDIRINODE, ext2path);
+        uint32_t ino= searchpath(fs, fs.rootdir_in, ext2path);
         if (ino==0) {
             printf("exportdir: path not found\n");
             return;
@@ -1138,7 +1141,7 @@ struct listfiles : action {
     {
         //TreeReconstructor tree;
         //tree.scanfs(fs);
-        recursedirs(fs, ROOTDIRINODE, "", [](const DirectoryEntry& e, const std::string& path) {
+        recursedirs(fs, fs.rootdir_in, "", [](const DirectoryEntry& e, const std::string& path) {
             printf("%9d %s%c %s/%s\n", e.inode,  e.filetype>=8 ? "**":"", "0-dcbpsl"[e.filetype&7], path.c_str(), e.name.c_str());
         });
     }
@@ -1148,7 +1151,7 @@ struct verboselistfiles : action {
     {
         //TreeReconstructor tree;
         //tree.scanfs(fs);
-        recursedirs(fs, ROOTDIRINODE, "", [&fs](const DirectoryEntry& e, const std::string& path) {
+        recursedirs(fs, fs.rootdir_in, "", [&fs](const DirectoryEntry& e, const std::string& path) {
             const Inode &i= fs.getinode(e.inode);
             printf("%9d %s %5d %5d %10d %s [%s%c] %s/%s\n", 
                     e.inode,  
@@ -1241,9 +1244,9 @@ class SparseReader : public ReadWriter {
         void dump(uint64_t off) const
         {
             if (isfill)
-                printf("%llx-%llx: fill with %08x\n", off, off+ndwords*4, value);
+                printf("%" PRIx64 "-%" PRIx64 ": fill with %08x\n", off, off+ndwords*4, value);
             else
-                printf("%llx-%llx: copy from %llx\n", off, off+ndwords*4, offset);
+                printf("%" PRIx64 "-%" PRIx64 ": copy from %" PRIx64 "\n", off, off+ndwords*4, offset);
         }
     };
     std::map<uint64_t, sparserecord> _map;
@@ -1335,7 +1338,7 @@ private:
 
             r->setpos(r->getpos() + chunksize-cnkhdrsize);
         }
-        printf("end of sparse: %llx\n", ofs);
+        printf("end of sparse: %" PRIx64 "\n", ofs);
     }
     void copydata(uint64_t sparseofs, uint32_t ndwords, uint64_t expandedofs)
     {
@@ -1434,6 +1437,8 @@ void usage()
     printf("     -d       verbosely lists all inodes\n");
     printf("     -o OFS1/OFS2  specify offset to efs/sparse image\n");
     printf("     -b from[-until]   hexdump blocks\n");
+    printf("     -S OFS   specify superblock offset\n");
+    printf("     -R inode specify root inode for -l and -d\n");
     printf("   #123       hexdump inode 123\n");
     printf("   #123:path  save inode 123 to path\n");
     printf("   ext2path   hexdump ext2fs path\n");
@@ -1450,6 +1455,8 @@ int main(int argc,char**argv)
     std::string fsfile;
     std::vector<action::ptr> actions;
     bool openasblockdev= false;
+    uint64_t sb_offset = 0x400;
+    uint64_t rootdir_in = ROOTDIRINODE;
 
     try {
 
@@ -1473,6 +1480,28 @@ int main(int argc,char**argv)
                       }
                       uint32_t last= *q=='-' ? strtol(q+1, &q, 0) : first+1;
                       actions.push_back(std::make_shared<dumpblocks>(first, last));
+                      }
+                      break;
+            case 'S':
+                      {
+                      std::string arg= getstrarg(argv,i,argc);
+                      char *q;
+                      sb_offset= strtoul(arg.c_str(), &q, 0);
+                      if (*q!=0) {
+                          printf("invalid -S offset spec\n");
+                          return 1;
+                      }
+		      }
+		      break;
+            case 'R':
+                      {
+                      std::string arg= getstrarg(argv,i,argc);
+                      char *q;
+                      rootdir_in = strtoul(arg.c_str(), &q, 0);
+                      if (*q!=0) {
+                          printf("invalid inode spec\n");
+                          return 1;
+                      }
                       }
                       break;
             default:
@@ -1516,6 +1545,8 @@ int main(int argc,char**argv)
             offsets.pop_front();
         }
     }
+    fs.sb_offset = sb_offset;
+    fs.rootdir_in = rootdir_in;
     fs.parse(r);
 
     for (auto a : actions)

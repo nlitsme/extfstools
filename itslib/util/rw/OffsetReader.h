@@ -13,7 +13,7 @@ public:
         : _r(r), _baseoff(off), _size(size)
     {
         if (size > _r->size()-_baseoff) {
-            printf("off=%08llx, size=%08llx,  src: %08llx\n", off, size, _r->size());
+            printf("off=%08" PRIx64 ", size=%08" PRIx64 ", src: %08" PRIx64 "\n", off, size, _r->size());
             throw "Offsetreader larger then source disk";
         }
     }
