@@ -24,6 +24,7 @@
 #include <memory>
 #include <system_error>
 #include <sys/stat.h>
+#include <inttypes.h>   // PRIx64
 
 #ifdef _WIN32
 #include <direct.h>
