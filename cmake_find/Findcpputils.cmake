@@ -1,4 +1,7 @@
 # NOTE: you can avoid downloading cpputils, by symlinking to a downloaded version here:
+if (TARGET cpputils)
+    return()
+endif()
 find_path(CPPUTILS_DIR NAMES string-lineenum.h PATHS symlinks/cpputils)
 if(CPPUTILS_DIR STREQUAL "CPPUTILS_DIR-NOTFOUND")
     include(FetchContent)
