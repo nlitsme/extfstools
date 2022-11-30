@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 project(extfstools)
 set(CMAKE_CXX_STANDARD 17)
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmfind")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake_find")
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     set(LINUX TRUE)
@@ -35,9 +35,7 @@ if (WIN32)
     add_definitions(-DNOMINMAX -DNOGDI)
 endif()
 
-add_library(itslib STATIC itslib/src/stringutils.cpp)
-target_include_directories(itslib PUBLIC itslib)
-target_compile_definitions(itslib PUBLIC _UNIX _NO_RAPI)
+find_package(itslib REQUIRED)
 
 set(Boost_USE_STATIC_LIBS OFF) 
 set(Boost_USE_MULTITHREADED ON)  
@@ -81,4 +79,4 @@ add_executable(ext2rd ext2rd.cpp)
 target_link_libraries(ext2rd  itslib)
 target_link_libraries(ext2rd ${MMAPLIB})
 
-
+install(TARGETS ext2rd DESTINATION bin)
