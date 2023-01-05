@@ -37,7 +37,8 @@ Build instructions
 
 There are two ways of building `extfstools`:
  * using cmake, actually, invoked using the default Makefile.
-   * type: `make`  or `make vc` for a windows build.
+   * type: `make`  or `make vc` for a windows build. Then run `make install`
+   if you want to install it.
  * using make with Makefile.unix
    * type: `make -f Makefile.unix`, this should also work in windows.
 

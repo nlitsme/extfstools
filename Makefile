@@ -14,3 +14,6 @@ vc:
 
 clean:
 	$(RM) -r build CMakeFiles CMakeCache.txt CMakeOutput.log
+
+install:
+	cp build/ext2rd /bin/
