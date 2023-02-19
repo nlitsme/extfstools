@@ -1,3 +1,6 @@
+if (TARGET itslib)
+    return()
+endif()
 find_path(ITSLIB_PATH NAMES include/itslib/stringutils.h PATHS symlinks/itslib)
 if(ITSLIB_PATH STREQUAL "ITSLIB_PATH-NOTFOUND")
     include(FetchContent)
@@ -7,15 +10,6 @@ if(ITSLIB_PATH STREQUAL "ITSLIB_PATH-NOTFOUND")
 else()
     set(itslib_BINARY_DIR ${CMAKE_BINARY_DIR}/itslib-build)
 endif()
-set(ITSLIB_INCLUDE_DIR ${ITSLIB_PATH}/include/itslib)
 
-list(APPEND ITSLIBSRC debug.cpp stringutils.cpp utfcvutils.cpp vectorutils.cpp FileFunctions.cpp)
-list(TRANSFORM ITSLIBSRC PREPEND ${ITSLIB_PATH}/src/)
-add_library(itslib STATIC ${ITSLIBSRC})
-target_include_directories(itslib PUBLIC ${ITSLIB_INCLUDE_DIR})
-target_compile_definitions(itslib PUBLIC _NO_RAPI _NO_WINDOWS)
-if(NOT WIN32)
-    target_compile_definitions(itslib PUBLIC _UNIX)
-endif()
-
+add_subdirectory(${ITSLIB_PATH})
 
