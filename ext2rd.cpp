@@ -11,7 +11,7 @@
 #include <ctime>                // gmtime, strftime
 
 #ifdef USE_CPPUTILS
-#include "mmfile.h"
+#include <cpputils/mmfile.h>
 #include "util/rw/MemoryReader.h"
 #else
 #include "util/rw/MmapReader.h"
