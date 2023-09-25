@@ -1120,7 +1120,7 @@ struct exportdirectory : action {
     {
         uint32_t ino= searchpath(fs, fs.rootdir_in, ext2path);
         if (ino==0) {
-            printf("exportdir: path not found\n");
+            printf("exportdir: path not found: %s\n", ext2path.c_str());
             return;
         }
         recursedirs(fs, ino, ".", [&](const DirectoryEntry& e, const std::string& path) {
