@@ -54,8 +54,10 @@ endif()
 
 if (OPT_ANALYZE)
     if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+        # see https://gcc.gnu.org/onlinedocs/gcc-12.2.0/gcc/Static-Analyzer-Options.html#index-analyzer
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fanalyzer")
     elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+        # https://clang.llvm.org/docs/UsersManual.html
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --analyze")
     endif()
 endif()
@@ -63,6 +65,7 @@ endif()
 if (OPT_ASAN AND OPT_TSAN)
     message(FATAL_ERROR "Only one sanitizer can be active at a time")
 elseif (OPT_ASAN)
+    # https://gcc.gnu.org/onlinedocs/gcc-12.2.0/gcc/Instrumentation-Options.html#index-fsanitize_003daddress
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=undefined")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address")
     #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=thread")
@@ -160,7 +163,7 @@ if(MSVC)
     # NOBITMAP - avoid error in mmreg.h
     # NOMINMAX - remove 'max()' macro from global namespace
     # NOGDI - ...
-    add_definitions(-DNOMINMAX -DNOGDI -DNOBITMAP)
+    add_definitions(-DNOMINMAX -DNOGDI -DNOBITMAP -DWIN32_LEAN_AND_MEAN)
     add_definitions(-DWIN32)
     add_definitions(-D__STDC_WANT_SECURE_LIB__=1)
 
