@@ -9,6 +9,20 @@
 #include <functional>
 #include <string>
 #include <ctime>                // gmtime, strftime
+#include <sys/stat.h>
+#include <sys/time.h>
+
+#ifndef _BSD_SOURCE
+int lutimes(const char *path, const struct timeval *times) {
+        struct stat psb;
+        if (lstat(path, &psb) == -1)
+                return -1;
+        if (S_ISLNK(psb.st_mode)) {
+                return 0;
+        }
+        return (utimes(path, times));
+}
+#endif
 
 #ifdef USE_CPPUTILS
 #include <cpputils/mmfile.h>
