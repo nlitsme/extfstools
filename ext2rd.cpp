@@ -41,56 +41,78 @@ int mkdir(const char *src, int mode)
     return _mkdir(src);
 }
 #endif
-
-
-
-
 //  ~/gitprj/repos/linux/fs/ext2/ext2.h
-//  todo: add 64bit support from ext4
+// todo: add 64bit support from ext4
 // todo: create ExtentsFileReader and BlocksFileReader
 
 #define ROOTDIRINODE  2
 
 // see linux/fs/ext4/ext4.h
-enum {EXT4_FT_UNKNOWN, EXT4_FT_REG_FILE, EXT4_FT_DIR, EXT4_FT_CHRDEV, EXT4_FT_BLKDEV, EXT4_FT_FIFO, EXT4_FT_SOCK, EXT4_FT_SYMLINK };
-#define EXT4_FEATURE_COMPAT_DIR_PREALLOC	0x0001
-#define EXT4_FEATURE_COMPAT_IMAGIC_INODES	0x0002
-#define EXT4_FEATURE_COMPAT_HAS_JOURNAL		0x0004
-#define EXT4_FEATURE_COMPAT_EXT_ATTR		0x0008
-#define EXT4_FEATURE_COMPAT_RESIZE_INODE	0x0010
-#define EXT4_FEATURE_COMPAT_DIR_INDEX		0x0020
+enum {
+    EXT4_FT_UNKNOWN,
+    EXT4_FT_REG_FILE,
+    EXT4_FT_DIR,
+    EXT4_FT_CHRDEV,
+    EXT4_FT_BLKDEV,
+    EXT4_FT_FIFO,
+    EXT4_FT_SOCK,
+    EXT4_FT_SYMLINK
+};
+#define EXT4_FEATURE_COMPAT_DIR_PREALLOC        0x0001
+#define EXT4_FEATURE_COMPAT_IMAGIC_INODES       0x0002
+#define EXT4_FEATURE_COMPAT_HAS_JOURNAL         0x0004
+#define EXT4_FEATURE_COMPAT_EXT_ATTR            0x0008
+#define EXT4_FEATURE_COMPAT_RESIZE_INODE        0x0010
+#define EXT4_FEATURE_COMPAT_DIR_INDEX           0x0020
+#define EXT4_FEATURE_COMPAT_SPARSE_SUPER2       0x0200
+/*
+ * The reason why "FAST_COMMIT" is a compat feature is that, FS becomes
+ * incompatible only if fast commit blocks are present in the FS. Since we
+ * clear the journal (and thus the fast commit blocks), we don't mark FS as
+ * incompatible. We also have a JBD2 incompat feature, which gets set when
+ * there are fast commit blocks present in the journal.
+ */
+#define EXT4_FEATURE_COMPAT_FAST_COMMIT         0x0400
+#define EXT4_FEATURE_COMPAT_STABLE_INODES       0x0800
 
-#define EXT4_FEATURE_RO_COMPAT_SPARSE_SUPER	0x0001
-#define EXT4_FEATURE_RO_COMPAT_LARGE_FILE	0x0002
-#define EXT4_FEATURE_RO_COMPAT_BTREE_DIR	0x0004
+
+#define EXT4_FEATURE_RO_COMPAT_SPARSE_SUPER     0x0001
+#define EXT4_FEATURE_RO_COMPAT_LARGE_FILE       0x0002
+#define EXT4_FEATURE_RO_COMPAT_BTREE_DIR        0x0004
 #define EXT4_FEATURE_RO_COMPAT_HUGE_FILE        0x0008
-#define EXT4_FEATURE_RO_COMPAT_GDT_CSUM		0x0010
-#define EXT4_FEATURE_RO_COMPAT_DIR_NLINK	0x0020
-#define EXT4_FEATURE_RO_COMPAT_EXTRA_ISIZE	0x0040
-#define EXT4_FEATURE_RO_COMPAT_QUOTA		0x0100
-#define EXT4_FEATURE_RO_COMPAT_BIGALLOC		0x0200
+#define EXT4_FEATURE_RO_COMPAT_GDT_CSUM         0x0010
+#define EXT4_FEATURE_RO_COMPAT_DIR_NLINK        0x0020
+#define EXT4_FEATURE_RO_COMPAT_EXTRA_ISIZE      0x0040
+#define EXT4_FEATURE_RO_COMPAT_QUOTA            0x0100
+#define EXT4_FEATURE_RO_COMPAT_BIGALLOC         0x0200
 /*
  * METADATA_CSUM also enables group descriptor checksums (GDT_CSUM).  When
  * METADATA_CSUM is set, group descriptor checksums use the same algorithm as
  * all other data structures' checksums.  However, the METADATA_CSUM and
  * GDT_CSUM bits are mutually exclusive.
  */
-#define EXT4_FEATURE_RO_COMPAT_METADATA_CSUM	0x0400
+#define EXT4_FEATURE_RO_COMPAT_METADATA_CSUM    0x0400
+#define EXT4_FEATURE_RO_COMPAT_READONLY         0x1000
+#define EXT4_FEATURE_RO_COMPAT_PROJECT          0x2000
+#define EXT4_FEATURE_RO_COMPAT_VERITY           0x8000
 
-#define EXT4_FEATURE_INCOMPAT_COMPRESSION	0x0001
-#define EXT4_FEATURE_INCOMPAT_FILETYPE		0x0002
-#define EXT4_FEATURE_INCOMPAT_RECOVER		0x0004 /* Needs recovery */
-#define EXT4_FEATURE_INCOMPAT_JOURNAL_DEV	0x0008 /* Journal device */
-#define EXT4_FEATURE_INCOMPAT_META_BG		0x0010
-#define EXT4_FEATURE_INCOMPAT_EXTENTS		0x0040 /* extents support */
-#define EXT4_FEATURE_INCOMPAT_64BIT		0x0080
+#define EXT4_FEATURE_INCOMPAT_COMPRESSION       0x0001
+#define EXT4_FEATURE_INCOMPAT_FILETYPE          0x0002
+#define EXT4_FEATURE_INCOMPAT_RECOVER           0x0004 /* Needs recovery */
+#define EXT4_FEATURE_INCOMPAT_JOURNAL_DEV       0x0008 /* Journal device */
+#define EXT4_FEATURE_INCOMPAT_META_BG           0x0010
+#define EXT4_FEATURE_INCOMPAT_EXTENTS           0x0040 /* extents support */
+#define EXT4_FEATURE_INCOMPAT_64BIT             0x0080
 #define EXT4_FEATURE_INCOMPAT_MMP               0x0100
-#define EXT4_FEATURE_INCOMPAT_FLEX_BG		0x0200
-#define EXT4_FEATURE_INCOMPAT_EA_INODE		0x0400 /* EA in inode */
-#define EXT4_FEATURE_INCOMPAT_DIRDATA		0x1000 /* data in dirent */
-#define EXT4_FEATURE_INCOMPAT_BG_USE_META_CSUM	0x2000 /* use crc32c for bg */
-#define EXT4_FEATURE_INCOMPAT_LARGEDIR		0x4000 /* >2GB or 3-lvl htree */
-#define EXT4_FEATURE_INCOMPAT_INLINE_DATA	0x8000 /* data in inode */
+#define EXT4_FEATURE_INCOMPAT_FLEX_BG           0x0200
+#define EXT4_FEATURE_INCOMPAT_EA_INODE          0x0400 /* EA in inode */
+#define EXT4_FEATURE_INCOMPAT_DIRDATA           0x1000 /* data in dirent */
+#define EXT4_FEATURE_INCOMPAT_BG_USE_META_CSUM  0x2000 /* use crc32c for bg */
+#define EXT4_FEATURE_INCOMPAT_CSUM_SEED         0x2000
+#define EXT4_FEATURE_INCOMPAT_LARGEDIR          0x4000 /* >2GB or 3-lvl htree */
+#define EXT4_FEATURE_INCOMPAT_INLINE_DATA       0x8000 /* data in inode */
+#define EXT4_FEATURE_INCOMPAT_ENCRYPT          0x10000
+#define EXT4_FEATURE_INCOMPAT_CASEFOLD         0x20000
 
 std::string timestr(uint32_t t32)
 {
@@ -411,19 +433,19 @@ struct ExtentInternal : ExtentNode {
 
 };
 struct ExtentHeader {
-	uint16_t eh_magic;	/* probably will support different formats */
-	uint16_t eh_entries;	/* number of valid entries */
-	uint16_t eh_max;		/* capacity of store in entries */
-	uint16_t eh_depth;	/* has tree real underlying blocks? */
-	uint32_t eh_generation;	/* generation of the tree */
+        uint16_t eh_magic;      /* probably will support different formats */
+        uint16_t eh_entries;    /* number of valid entries */
+        uint16_t eh_max;        /* capacity of store in entries */
+        uint16_t eh_depth;      /* has tree real underlying blocks? */
+        uint32_t eh_generation; /* generation of the tree */
 
     void parse(const uint8_t *first)
     {
         const uint8_t *p= first;
-        eh_magic	= get16le(p); p+=2;
-        eh_entries	= get16le(p); p+=2;
-        eh_max		= get16le(p); p+=2;
-        eh_depth	= get16le(p); p+=2;
+        eh_magic        = get16le(p); p+=2;
+        eh_entries      = get16le(p); p+=2;
+        eh_max          = get16le(p); p+=2;
+        eh_depth        = get16le(p); p+=2;
         eh_generation= get32le(p);p+=4;
     }
     void dump() const
@@ -482,36 +504,48 @@ bool ExtentInternal::enumblocks(const SuperBlock &super, BLOCKCALLBACK cb) const
 }
 
 // see linux/include/uapi/linux/stat.h
-enum { EXT4_S_IFIFO=0x1000, EXT4_S_IFCHR=0x2000, EXT4_S_IFDIR=0x4000, EXT4_S_IFBLK=0x6000, EXT4_S_IFREG=0x8000, EXT4_S_IFLNK=0xa000, EXT4_S_IFSOCK=0xc000 };
+enum {
+    EXT4_S_IFIFO=0x1000,
+    EXT4_S_IFCHR=0x2000,
+    EXT4_S_IFDIR=0x4000,
+    EXT4_S_IFBLK=0x6000,
+    EXT4_S_IFREG=0x8000,
+    EXT4_S_IFLNK=0xa000,
+    EXT4_S_IFSOCK=0xc000
+};
 // see linux/fs/ext4/ext4.h
 
 
-#define	EXT4_SECRM_FL			0x00000001 /* Secure deletion */
-#define	EXT4_UNRM_FL			0x00000002 /* Undelete */
-#define	EXT4_COMPR_FL			0x00000004 /* Compress file */
-#define EXT4_SYNC_FL			0x00000008 /* Synchronous updates */
-#define EXT4_IMMUTABLE_FL		0x00000010 /* Immutable file */
-#define EXT4_APPEND_FL			0x00000020 /* writes to file may only append */
-#define EXT4_NODUMP_FL			0x00000040 /* do not dump file */
-#define EXT4_NOATIME_FL			0x00000080 /* do not update atime */
+#define EXT4_SECRM_FL           0x00000001 /* Secure deletion */
+#define EXT4_UNRM_FL            0x00000002 /* Undelete */
+#define EXT4_COMPR_FL           0x00000004 /* Compress file */
+#define EXT4_SYNC_FL            0x00000008 /* Synchronous updates */
+#define EXT4_IMMUTABLE_FL       0x00000010 /* Immutable file */
+#define EXT4_APPEND_FL          0x00000020 /* writes to file may only append */
+#define EXT4_NODUMP_FL          0x00000040 /* do not dump file */
+#define EXT4_NOATIME_FL         0x00000080 /* do not update atime */
 /* Reserved for compression usage... */
-#define EXT4_DIRTY_FL			0x00000100
-#define EXT4_COMPRBLK_FL		0x00000200 /* One or more compressed clusters */
-#define EXT4_NOCOMPR_FL			0x00000400 /* Don't compress */
-#define EXT4_ECOMPR_FL			0x00000800 /* Compression error */
+#define EXT4_DIRTY_FL           0x00000100
+#define EXT4_COMPRBLK_FL        0x00000200 /* One or more compressed clusters */
+#define EXT4_NOCOMPR_FL         0x00000400 /* Don't compress */
+#define EXT4_ENCRYPT_FL         0x00000800 /* encrypted file, was: EXT4_ECOMPR_FL Compression error */
 /* End compression flags --- maybe not all used */
-#define EXT4_INDEX_FL			0x00001000 /* hash-indexed directory */
-#define EXT4_IMAGIC_FL			0x00002000 /* AFS directory */
-#define EXT4_JOURNAL_DATA_FL	0x00004000 /* file data should be journaled */
-#define EXT4_NOTAIL_FL			0x00008000 /* file tail should not be merged */
-#define EXT4_DIRSYNC_FL			0x00010000 /* dirsync behaviour (directories only) */
-#define EXT4_TOPDIR_FL			0x00020000 /* Top of directory hierarchies*/
+#define EXT4_INDEX_FL           0x00001000 /* hash-indexed directory */
+#define EXT4_IMAGIC_FL          0x00002000 /* AFS directory */
+#define EXT4_JOURNAL_DATA_FL    0x00004000 /* file data should be journaled */
+#define EXT4_NOTAIL_FL          0x00008000 /* file tail should not be merged */
+#define EXT4_DIRSYNC_FL         0x00010000 /* dirsync behaviour (directories only) */
+#define EXT4_TOPDIR_FL          0x00020000 /* Top of directory hierarchies*/
 #define EXT4_HUGE_FILE_FL       0x00040000 /* Set to each huge file */
-#define EXT4_EXTENTS_FL			0x00080000 /* Inode uses extents */
-#define EXT4_EA_INODE_FL	    0x00200000 /* Inode used for large EA */
-#define EXT4_EOFBLOCKS_FL		0x00400000 /* Blocks allocated beyond EOF */
-#define EXT4_INLINE_DATA_FL		0x10000000 /* Inode has inline data. */
-#define EXT4_RESERVED_FL		0x80000000 /* reserved for ext4 lib */
+#define EXT4_EXTENTS_FL         0x00080000 /* Inode uses extents */
+#define EXT4_VERITY_FL          0x00100000 /* Verity protected inode */
+#define EXT4_EA_INODE_FL        0x00200000 /* Inode used for large EA */
+#define EXT4_EOFBLOCKS_FL       0x00400000 /* Blocks allocated beyond EOF */
+#define EXT4_DAX_FL             0x02000000 /* Inode is DAX */
+#define EXT4_INLINE_DATA_FL     0x10000000 /* Inode has inline data. */
+#define EXT4_PROJINHERIT_FL     0x20000000 /* Create with parents projid */
+#define EXT4_CASEFOLD_FL        0x40000000 /* Casefolded directory */
+#define EXT4_RESERVED_FL        0x80000000 /* reserved for ext4 lib */
 struct Inode {
     uint16_t i_mode;       //  000
     uint16_t i_uid;        //  002
@@ -599,7 +633,7 @@ struct Inode {
     {
         StringList l;
 
-        uint32_t all = EXT4_SECRM_FL|EXT4_UNRM_FL|EXT4_COMPR_FL|EXT4_SYNC_FL|EXT4_IMMUTABLE_FL|EXT4_APPEND_FL|EXT4_NODUMP_FL|EXT4_NOATIME_FL|EXT4_DIRTY_FL|EXT4_COMPRBLK_FL|EXT4_NOCOMPR_FL|EXT4_ECOMPR_FL|EXT4_INDEX_FL|EXT4_IMAGIC_FL|EXT4_JOURNAL_DATA_FL|EXT4_NOTAIL_FL|EXT4_DIRSYNC_FL|EXT4_TOPDIR_FL|EXT4_HUGE_FILE_FL|EXT4_EXTENTS_FL|EXT4_EA_INODE_FL|EXT4_EOFBLOCKS_FL|EXT4_INLINE_DATA_FL|EXT4_RESERVED_FL;
+        uint32_t all = EXT4_SECRM_FL|EXT4_UNRM_FL|EXT4_COMPR_FL|EXT4_SYNC_FL|EXT4_IMMUTABLE_FL|EXT4_APPEND_FL|EXT4_NODUMP_FL|EXT4_NOATIME_FL|EXT4_DIRTY_FL|EXT4_COMPRBLK_FL|EXT4_NOCOMPR_FL|EXT4_ENCRYPT_FL|EXT4_INDEX_FL|EXT4_IMAGIC_FL|EXT4_JOURNAL_DATA_FL|EXT4_NOTAIL_FL|EXT4_DIRSYNC_FL|EXT4_TOPDIR_FL|EXT4_HUGE_FILE_FL|EXT4_EXTENTS_FL|EXT4_EA_INODE_FL|EXT4_EOFBLOCKS_FL|EXT4_INLINE_DATA_FL|EXT4_RESERVED_FL;
 
 
         if (fl&EXT4_SECRM_FL) l.push_back("SECRM");
@@ -613,7 +647,7 @@ struct Inode {
         if (fl&EXT4_DIRTY_FL) l.push_back("DIRTY");
         if (fl&EXT4_COMPRBLK_FL) l.push_back("COMPRBLK");
         if (fl&EXT4_NOCOMPR_FL) l.push_back("NOCOMPR");
-        if (fl&EXT4_ECOMPR_FL) l.push_back("ECOMPR");
+        if (fl&EXT4_ENCRYPT_FL) l.push_back("ECOMPR");
         if (fl&EXT4_INDEX_FL) l.push_back("INDEX");
         if (fl&EXT4_IMAGIC_FL) l.push_back("IMAGIC");
         if (fl&EXT4_JOURNAL_DATA_FL) l.push_back("JOURNAL_DATA");
@@ -1492,8 +1526,8 @@ int main(int argc,char**argv)
                           printf("invalid -S offset spec\n");
                           return 1;
                       }
-		      }
-		      break;
+                      }
+                      break;
             case 'R':
                       {
                       std::string arg= getstrarg(argv,i,argc);
