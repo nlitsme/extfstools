@@ -40,7 +40,7 @@ find_package(itslib REQUIRED)
 set(Boost_USE_STATIC_LIBS OFF) 
 set(Boost_USE_MULTITHREADED ON)  
 set(Boost_USE_STATIC_RUNTIME OFF) 
-# NOTE: I specified date_time here, while in fact i need interprocess.
+# NOTE: I specified date_time here, while in fact I need interprocess.
 # Problem is that 'interprocess' is not recognized by the FindBoost.cmake script,
 # so I substituted an arbitrary lib which is there.
 find_package(Boost COMPONENTS date_time)
@@ -65,7 +65,7 @@ else()
     else()
         find_package(cpputils)
         if (cpputils_FOUND)
-            message(NOTICE "uisng cpputils")
+            message(NOTICE "using cpputils")
             set(MMAPLIB cpputils)
             add_definitions(-DUSE_CPPUTILS)
         endif()
