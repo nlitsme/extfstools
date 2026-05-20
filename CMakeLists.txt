@@ -1,5 +1,11 @@
 cmake_minimum_required(VERSION 3.10)
 project(extfstools)
+
+set(CMAKE_POLICY_DEFAULT_CMP0128 NEW)                             
+set(CMAKE_POLICY_DEFAULT_CMP0126 NEW)
+cmake_policy(SET CMP0126 NEW)
+cmake_policy(SET CMP0128 NEW)
+
 set(CMAKE_CXX_STANDARD 17)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake_find")
 
